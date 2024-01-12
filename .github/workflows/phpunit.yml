@@ -9,6 +9,15 @@ on:
         required: false
         type: string
         default: 'trunk'
+      uploadCoverage:
+        description: 'Upload coverage to codecov'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      codecovToken:
+        description: 'Codecov token'
+        required: false
 jobs:
   run:
     name: Tests
@@ -26,8 +35,13 @@ jobs:
           path: custom/plugins/${{ inputs.extensionName }}
       - name: Run PHPUnit
         working-directory: custom/plugins/${{ inputs.extensionName }}
-        run: ${{ github.workspace }}/vendor/bin/phpunit --coverage-clover ${{ github.workspace }}/coverage.xml
+        run: ${{ github.workspace }}/vendor/bin/phpunit --coverage-clover clover.xml
       - name: Upload Coverage
+        if: inputs.uploadCoverage == true
         uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.codecovToken }}
         with:
-          file: ${{ github.workspace }}/clover.xml
+          root_dir: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
+          working-directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
+          files: ./clover.xml
