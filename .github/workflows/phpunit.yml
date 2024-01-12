@@ -9,7 +9,6 @@ on:
         required: false
         type: string
         default: 'trunk'
-
 jobs:
   run:
     name: Tests
@@ -21,16 +20,13 @@ jobs:
           shopware-version: ${{ inputs.shopwareVersion }}
           php-version: 8.2
           php-extensions: pcov
-
       - name: Clone Extension
         uses: actions/checkout@v4
         with:
           path: custom/plugins/${{ inputs.extensionName }}
-
       - name: Run PHPUnit
         working-directory: custom/plugins/${{ inputs.extensionName }}
         run: ${{ github.workspace }}/vendor/bin/phpunit --coverage-clover ${{ github.workspace }}/coverage.xml
-
       - name: Upload Coverage
         uses: codecov/codecov-action@v3
         with:

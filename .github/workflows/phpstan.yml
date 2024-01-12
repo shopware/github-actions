@@ -9,7 +9,6 @@ on:
         required: false
         type: string
         default: 'trunk'
-
 jobs:
   run:
     name: Static Analyse
@@ -22,21 +21,16 @@ jobs:
           php-version: 8.2
           env: prod
           install: 'true'
-
       - name: Clone Extension
         uses: actions/checkout@v4
         with:
           path: custom/plugins/${{ inputs.extensionName }}
-      
       - name: Refresh
         run: bin/console plugin:refresh
-
       - name: Install Extension
         run: bin/console plugin:install --activate ${{ inputs.extensionName }}
-
       - name: Build PHPStan Bootstrap
         run: php ${{ github.workspace }}/src/Core/DevOps/StaticAnalyze/phpstan-bootstrap.php
-
       - name: Run PHPStan
         working-directory: custom/plugins/${{ inputs.extensionName }}
         run: ${{ github.workspace }}/vendor/bin/phpstan analyze --error-format=github --no-progress

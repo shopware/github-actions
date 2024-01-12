@@ -1,0 +1,107 @@
+name: Store Release
+on:
+    workflow_call:
+        inputs:
+          extensionName:
+            required: true
+            type: string
+          cliVersion:
+              description: 'The shopware-cli version to build the extension with'
+              required: false
+              type: string
+              default: 'latest'
+        secrets:
+          accountUser:
+            required: true
+          accountPassword:
+            required: true
+          ghToken:
+            required: true
+
+env:
+    EXTENSION_NAME: ${{ inputs.extensionName }}
+    SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ secrets.accountUser }}
+    SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ secrets.accountPassword }}
+
+jobs:
+    Build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                # fetch all git entries for changelog generation
+                fetch-depth: 0
+
+            - name: Install shopware-cli
+              uses: FriendsOfShopware/shopware-cli-action@v1
+              with:
+                version: ${{ inputs.cliVersion }}
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build & create zip
+              env:
+                NODE_OPTIONS: --openssl-legacy-provider
+              run: |
+                shopware-cli extension zip --git-commit ${{ github.sha }} . --release
+                mv ${{ env.EXTENSION_NAME }}-${{ github.sha }}.zip ${{ env.EXTENSION_NAME }}.zip
+
+            - name: Upload Artefact
+              uses: actions/upload-artifact@v4
+              with:
+                name: ${{ env.EXTENSION_NAME }}
+                path: ${{ env.EXTENSION_NAME }}.zip
+
+            - name: Get version
+              run: |
+                echo "EXTENSION_VERSION=$(jq ".version" composer.json -r)" >> $GITHUB_ENV
+
+            - name: Check Tag existence
+              uses: mukunku/tag-exists-action@v1.5.0
+              id: checkTag
+              with:
+                tag: ${{ env.EXTENSION_VERSION }}
+              env:
+                GITHUB_TOKEN: ${{ secrets.ghToken }}
+
+            - name: Validate Zip
+              run: shopware-cli extension validate $(pwd)/${EXTENSION_NAME}.zip
+
+            - name: Store Upload
+              if: steps.checkTag.outputs.exists != 'true'
+              run: shopware-cli account producer extension upload $(pwd)/${EXTENSION_NAME}.zip
+              env:
+                GITHUB_TOKEN: ${{ secrets.ghToken }}
+
+            - name: Extract Changelog
+              if: steps.checkTag.outputs.exists != 'true'
+              run: shopware-cli extension get-changelog $(pwd)/${EXTENSION_NAME}.zip > /tmp/changelog.txt
+
+            - name: Unzip
+              run: |
+                unzip -o -q "${EXTENSION_NAME}.zip" -d ./toDeploy
+                mv "${EXTENSION_NAME}.zip" /tmp/
+                find ./ -maxdepth 1 ! -name "toDeploy" ! -name ".git" ! -name "." ! -name ".." -exec rm -rf {} \;
+                mv ./toDeploy/${EXTENSION_NAME}/* ./
+                rm -rf ./toDeploy
+                rm -rf ./vendor
+
+            - name: Commit
+              if: steps.checkTag.outputs.exists != 'true'
+              run: |
+                git config user.name "GitHub Actions Bot"
+                git config user.email "<>"
+                git add -f .
+                git commit -m "Build release"
+                git tag ${EXTENSION_VERSION}
+                git push origin ${EXTENSION_VERSION}
+
+            - name: Create a GitHub release
+              if: steps.checkTag.outputs.exists != 'true'
+              uses: ncipollo/release-action@v1
+              with:
+                artifacts: /tmp/${{ env.EXTENSION_NAME }}.zip
+                tag: ${{ env.EXTENSION_VERSION }}
+                name: ${{ env.EXTENSION_VERSION }}
+                bodyFile: /tmp/changelog.txt

@@ -9,7 +9,6 @@ on:
         required: false
         type: string
         default: 'trunk'
-
 jobs:
   run:
     name: Check Style
@@ -19,22 +18,18 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
-
       - name: Clone Shopware
         uses: actions/checkout@v4
         with:
           repository: "shopware/shopware"
           ref: ${{ inputs.shopwareVersion }}
-
       - name: Install Composer Dependencies
         working-directory: vendor-bin/cs-fixer
         run: composer install
-
       - name: Clone Extension
         uses: actions/checkout@v4
         with:
           path: custom/plugins/${{ inputs.extensionName }}
-
       - name: Run ECS
         working-directory: custom/plugins/${{ inputs.extensionName }}
         run: ${{ github.workspace }}/vendor-bin/cs-fixer/vendor/bin/ecs check
