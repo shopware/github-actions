@@ -12,7 +12,7 @@ on:
 
 jobs:
   run:
-    name: Check Style (PHP)
+    name: Check Style
     runs-on: ubuntu-latest
     steps:
       - name: Setup PHP

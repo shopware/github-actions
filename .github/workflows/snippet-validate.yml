@@ -12,7 +12,7 @@ on:
 
 jobs:
   run:
-    name: Static Analyse
+    name: Validate Snippets
     runs-on: ubuntu-latest
     steps:
       - name: Setup Shopware
@@ -34,9 +34,5 @@ jobs:
       - name: Install Extension
         run: bin/console plugin:install --activate ${{ inputs.extensionName }}
 
-      - name: Build PHPStan Bootstrap
-        run: php ${{ github.workspace }}/src/Core/DevOps/StaticAnalyze/phpstan-bootstrap.php
-
-      - name: Run PHPStan
-        working-directory: custom/plugins/${{ inputs.extensionName }}
-        run: ${{ github.workspace }}/vendor/bin/phpstan analyze --error-format=github --no-progress
+      - name: Validate Snippets
+        run: php ${{ github.workspace }}/bin/console snippets:validate
