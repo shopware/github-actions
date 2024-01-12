@@ -9,6 +9,8 @@ on:
         required: false
         type: string
         default: 'trunk'
+env:
+  SHOPWARE_TOOL_CACHE_ECS: ${{ github.workspace }}/var/cs_fixer
 jobs:
   run:
     name: Check Style
@@ -33,7 +35,7 @@ jobs:
       - name: ECS cache
         uses: actions/cache@v3
         with:
-          path: var/cache/cs_fixer
+          path: ${{ env.SHOPWARE_TOOL_CACHE_ECS }}
           key: ${{ runner.OS }}-${{ github.repository }}-ecs-${{ github.sha }}
           restore-keys: |
             ${{ runner.OS }}-${{ github.repository }}-ecs-
