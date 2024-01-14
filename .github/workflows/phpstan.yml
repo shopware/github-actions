@@ -28,6 +28,7 @@ jobs:
         with:
           path: custom/plugins/${{ inputs.extensionName }}
       - name: Create phpstan.neon
+        working-directory: custom/plugins/${{ inputs.extensionName }}
         run: |
           printf "parameters:\n  tmpDir: ${{ env.SHOPWARE_TOOL_CACHE_PHPSTAN }}\nincludes:\n  - phpstan.neon.dist" > phpstan.neon
       - name: PHPStan cache
