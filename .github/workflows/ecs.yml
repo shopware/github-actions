@@ -40,5 +40,4 @@ jobs:
           restore-keys: |
             ${{ runner.OS }}-${{ github.repository }}-ecs-
       - name: Run ECS
-        working-directory: custom/plugins/${{ inputs.extensionName }}
-        run: ${{ github.workspace }}/vendor-bin/cs-fixer/vendor/bin/ecs check
+        run: ${{ github.workspace }}/vendor-bin/cs-fixer/vendor/bin/ecs check custom/plugins/${{ env.PLUGIN_NAME }}
