@@ -1,0 +1,19 @@
+on:
+  workflow_call:
+
+jobs:
+  run:
+    name: Check Style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          tools: php-cs-fixer, cs2pr
+
+      - name: Run PHP CS Fixer
+        run: php-cs-fixer fix . --dry-run --rules=@PER-CS2.0 --format=checkstyle | cs2pr
