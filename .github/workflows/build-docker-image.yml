@@ -10,10 +10,14 @@ on:
               description: 'PHP extensions to install'
               type: string
               default: ''
-            disable-bun:
-              description: 'Disables the usage of Bun'
+            use-bun:
+              description: 'Enables the usage of Bun as package manager'
               type: boolean
-              default: false
+              default: true
+            bun-version:
+              description: 'Bun version to install'
+              type: string
+              default: 'latest'
         secrets:
             ghToken:
               required: true
@@ -34,9 +38,9 @@ jobs:
 
         - name: Install Bun
           uses: oven-sh/setup-bun@v1
-          if: inputs.disable-bun == false
+          if: inputs.use-bun == true
           with:
-            bun-version: latest
+            bun-version: ${{ inputs.bun-version }}
         
         - name: Setup PHP
           uses: shivammathur/setup-php@v2
