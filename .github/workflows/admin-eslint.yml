@@ -1,0 +1,37 @@
+name: ESLint
+on:
+  workflow_call:
+    inputs:
+        extensionName:
+          description: 'Your extension name'
+          required: true
+          type: string
+
+jobs:
+  run:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Shopware
+        uses: actions/checkout@v4
+        with:
+         repository: shopware/shopware
+         ref: trunk
+
+      - name: Clone Extension
+        uses: actions/checkout@v4
+        with:
+          path: custom/plugins/${{ inputs.extensionName }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '20.x'
+
+      - name: Install Plugin Dependencies
+        working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
+        run: npm install --no-audit --no-fund --prefer-offline
+
+      - name: Run ESLint
+        working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
+        run: npm run lint

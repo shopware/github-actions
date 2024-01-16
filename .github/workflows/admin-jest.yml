@@ -1,0 +1,56 @@
+name: Jest
+on:
+  workflow_call:
+    inputs:
+        extensionName:
+          description: 'Your extension name'
+          required: true
+          type: string
+
+jobs:
+    run:
+        name: ESLint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup Shopware
+              uses: FriendsOfShopware/setup-shopware@main
+              with:
+                shopware-version: trunk
+                php-version: 8.2
+                env: prod
+                install: 'true'
+    
+            - name: Clone Extension
+              uses: actions/checkout@v4
+              with:
+                path: custom/plugins/${{ inputs.extensionName }}
+        
+            - name: Refresh Plugins
+              run: php bin/console plugin:refresh
+        
+            - name: Install Plugin
+              run: php bin/console plugin:install --activate ${{ inputs.extensionName }}
+        
+            - name: Setup Node
+              uses: actions/setup-node@v1
+              with:
+                node-version: '20.x'
+        
+            - name: Install Administration dependencies
+              working-directory: src/Administration/Resources/app/administration
+              run: npm install --no-audit --no-fund --prefer-offline
+        
+            - name: Prepare Jest environment
+              working-directory: src/Administration/Resources/app/administration
+              run: npm run unit-setup
+        
+            - name: Generate Entity Schema
+              run: php bin/console framework:schema -s 'entity-schema' src/Administration/Resources/app/administration/test/_mocks_/entity-schema.json
+        
+            - name: Install Plugin Dependencies
+              working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
+              run: npm install --no-audit --no-fund --prefer-offline
+        
+            - name: Jest Unit Tests
+              working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
+              run: npm run unit
