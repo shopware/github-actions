@@ -34,7 +34,7 @@ jobs:
 
         - name: Install Bun
           uses: oven-sh/setup-bun@v1
-          if: !inputs.disable-bun
+          if: inputs.disable-bun == false
           with:
             bun-version: latest
         
