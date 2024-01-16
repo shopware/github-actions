@@ -1,3 +1,4 @@
+name: Run PHP-CS-Fixer
 on:
   workflow_call:
 
