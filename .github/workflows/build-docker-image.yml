@@ -10,6 +10,10 @@ on:
               description: 'PHP extensions to install'
               type: string
               default: ''
+            disable-bun:
+              description: 'Disables the usage of Bun'
+              type: boolean
+              default: false
         secrets:
             ghToken:
               required: true
@@ -30,6 +34,7 @@ jobs:
 
         - name: Install Bun
           uses: oven-sh/setup-bun@v1
+          if: !inputs.disable-bun
           with:
             bun-version: latest
         
