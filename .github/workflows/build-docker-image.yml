@@ -4,17 +4,15 @@ on:
         inputs:
             php-version:
               description: 'PHP Version'
-              required: true
               type: string
               default: '8.2'
             php-extensions:
               description: 'PHP extensions to install'
-              required: true
               type: string
               default: ''
         secrets:
             ghToken:
-                required: true
+              required: true
 jobs:
     run:
         runs-on: ubuntu-latest
