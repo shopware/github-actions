@@ -1,0 +1,73 @@
+name: Build Docker Image
+on:
+    workflow_call:
+        inputs:
+            php-version:
+              description: 'PHP Version'
+              required: true
+              type: string
+              default: '8.2'
+            php-extensions:
+              description: 'PHP extensions to install'
+              required: true
+              type: string
+              default: ''
+        secrets:
+            ghToken:
+                required: true
+jobs:
+    run:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+
+        - name: Login into Github Docker Registery
+          run: echo "${{ secrets.ghToken }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+        - name: Install Shopware-CLI
+          uses: FriendsOfShopware/shopware-cli-action@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.ghToken }}
+
+        - name: Install Bun
+          uses: oven-sh/setup-bun@v1
+          with:
+            bun-version: latest
+        
+        - name: Setup PHP
+          uses: shivammathur/setup-php@v2
+          with:
+            php-version: '${{ inputs.php-version }}'
+            extensions: ${{ inputs.php-extensions }}
+        
+        - name: Get Composer Cache Directory
+          id: composer-cache
+          run: |
+            echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+        - name: Cache Composer
+          id: composer
+          uses: actions/cache@v3
+          with:
+            path: ${{ steps.composer-cache.outputs.dir }}
+            key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+            restore-keys: |
+                ${{ runner.os }}-composer-
+
+        - name: Set composer vars
+          run: |
+            echo "COMPOSER_DISABLE_NETWORK=${{ steps.composer.outputs.cache-hit && '1' || '0'  }}" >> "$GITHUB_ENV"
+            echo "COMPOSER_NO_AUDIT=1" >> "$GITHUB_ENV"
+            echo "COMPOSER_ROOT_VERSION=1.0.0" >> "$GITHUB_ENV"
+
+        - name: Build project
+          run: shopware-cli project ci .
+
+        - name: Build and push
+          uses: docker/build-push-action@v4
+          with:
+            context: .
+            file: ./docker/Dockerfile
+            push: true
+            tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
