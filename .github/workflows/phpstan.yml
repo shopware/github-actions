@@ -28,6 +28,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: custom/plugins/${{ inputs.extensionName }}
+      - name: Install extension with Composer
+        run: composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name)
       - name: Create phpstan.neon
         working-directory: custom/plugins/${{ inputs.extensionName }}
         run: |
