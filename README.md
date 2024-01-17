@@ -83,3 +83,39 @@ jobs:
       accountPassword: ${{ secrets.SHOPWARE_ACCOUNT_PASSWORD }}
       ghToken: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+## Extension Dependencies (For PHPUnit & phpstan)
+
+If your extension has dependencies, you can specify them with the `dependencies` input and they will also be installed. The
+input should a JSON array of objects containing the extension name and repository URL:
+
+```yaml
+jobs:
+    phpstan:
+        uses: shopware/github-actions/.github/workflows/phpstan.yml@main
+        with:
+          extensionName: MyExtensionName
+          shopwareVersion: 6.5.x
+          dependencies: |-
+            [
+              {"name": "SwagPlatformDemoData", "repo": "git@github.com:shopware/SwagPlatformDemoData.git"}
+            ]
+```
+
+If your extension is private, you can specify use variables in the repository URL. They will be replaced with a corresponding secret which you can pass using the `secrets.env` input.
+The secret should be defined in your GitHub repository.
+
+```yaml
+jobs:
+    phpstan:
+        uses: shopware/github-actions/.github/workflows/phpstan.yml@main
+        with:
+          extensionName: MyExtensionName
+          shopwareVersion: 6.5.x
+          dependencies: |-
+            [
+              {"name": "MyPrivateExtension", "repo": "https://user:$MY_EXTENSION_TOKEN@gitlab.domain.com/org/my-extension.git"}
+            ]
+          secrets:
+            env: MY_EXTENSION_TOKEN=${{ secrets.MY_EXTENSION_TOKEN }}
+```
