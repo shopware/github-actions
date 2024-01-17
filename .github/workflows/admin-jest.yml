@@ -10,6 +10,15 @@ on:
           required: false
           type: string
           default: 'trunk'
+        uploadCoverage:
+          description: 'Upload coverage to codecov'
+          required: false
+          type: boolean
+          default: false
+    secrets:
+      codecovToken:
+        description: 'Codecov token'
+        required: false
 
 jobs:
     run:
@@ -57,4 +66,14 @@ jobs:
         
             - name: Jest Unit Tests
               working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
-              run: npm run unit
+              run: npm run unit -- --coverage
+
+            - name: Upload Coverage
+              if: inputs.uploadCoverage == true
+              uses: codecov/codecov-action@v3
+              env:
+                CODECOV_TOKEN: ${{ secrets.codecovToken }}
+              with:
+                root_dir: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
+                working-directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
+                directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
