@@ -22,7 +22,7 @@ on:
 
 jobs:
     run:
-        name: ESLint
+        name: Jest
         runs-on: ubuntu-latest
         steps:
             - name: Setup Shopware
