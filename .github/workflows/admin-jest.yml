@@ -6,6 +6,10 @@ on:
           description: 'Your extension name'
           required: true
           type: string
+        shopwareVersion:
+          required: false
+          type: string
+          default: 'trunk'
 
 jobs:
     run:
@@ -15,7 +19,7 @@ jobs:
             - name: Setup Shopware
               uses: FriendsOfShopware/setup-shopware@main
               with:
-                shopware-version: trunk
+                shopware-version: ${{ inputs.shopwareVersion }}
                 php-version: 8.2
                 env: prod
                 install: 'true'
