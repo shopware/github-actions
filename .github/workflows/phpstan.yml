@@ -65,7 +65,7 @@ jobs:
         run: |
           printf "parameters:\n  tmpDir: ${{ env.SHOPWARE_TOOL_CACHE_PHPSTAN }}\nincludes:\n  - phpstan.neon.dist" > phpstan.neon
       - name: PHPStan cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.SHOPWARE_TOOL_CACHE_PHPSTAN }}
           key: ${{ runner.OS }}-${{ github.repository }}-phpstan-${{ github.sha }}
