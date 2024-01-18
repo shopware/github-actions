@@ -55,7 +55,7 @@ jobs:
 
         - name: Cache Composer
           id: composer
-          uses: actions/cache@v3
+          uses: actions/cache@v4
           with:
             path: ${{ steps.composer-cache.outputs.dir }}
             key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
