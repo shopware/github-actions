@@ -39,6 +39,6 @@ jobs:
       - name: Run ESLint
         working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/storefront
         run: |
-          ../../../../../../../src/Storefront/Resources/app/storefront/node_modules/.bin/eslint --config ../../../../../../../src/Storefront/Resources/app/storefront/.eslintrc.js ./src
+          ${{ github.workspace }}/src/Storefront/Resources/app/storefront/node_modules/.bin/eslint --config ${{ github.workspace }}src/Storefront/Resources/app/storefront/.eslintrc.js ./src
           ../../../../../../../src/Storefront/Resources/app/storefront/node_modules/.bin/stylelint --config ../../../../../../../src/Storefront/Resources/app/storefront/stylelint.config.js ./src
         
