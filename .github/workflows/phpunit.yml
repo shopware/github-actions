@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Shopware
-        uses: FriendsOfShopware/setup-shopware@main
+        uses: shopware/setup-shopware@main
         with:
           shopware-version: ${{ inputs.shopwareVersion }}
           php-version: ${{ inputs.phpVersion }}
