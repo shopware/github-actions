@@ -10,6 +10,14 @@ on:
         required: false
         type: string
         default: 'trunk'
+      phpVersion:
+        required: false
+        type: string
+        default: '8.2'
+      mysqlVersion:
+        required: false
+        type: string
+        default: 'builtin'
       dependencies:
         required: false
         type: string
@@ -34,7 +42,8 @@ jobs:
         uses: FriendsOfShopware/setup-shopware@main
         with:
           shopware-version: ${{ inputs.shopwareVersion }}
-          php-version: 8.2
+          php-version: ${{ inputs.phpVersion }}
+          mysql-version: ${{ inputs.mysqlVersion }}
           php-extensions: pcov
       - name: Clone Extension
         uses: actions/checkout@v4
