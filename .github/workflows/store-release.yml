@@ -36,8 +36,6 @@ jobs:
         uses: FriendsOfShopware/shopware-cli-action@v1
         with:
           version: ${{ inputs.cliVersion }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build & create zip
         env:
           NODE_OPTIONS: --openssl-legacy-provider
@@ -68,10 +66,10 @@ jobs:
           SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ secrets.accountUser }}
           SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ secrets.accountPassword }}
       - name: Extract Changelog
-        if: steps.checkTag.outputs.exists != 'true' && publishOnly == false
+        if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
         run: shopware-cli extension get-changelog $(pwd)/${{ inputs.extensionName }}.zip > /tmp/changelog.txt
       - name: Unzip
-        if: publishOnly == false
+        if: inputs.publishOnly == false
         run: |
           unzip -o -q "${{ inputs.extensionName }}.zip" -d ./toDeploy
           mv "${{ inputs.extensionName }}.zip" /tmp/
@@ -80,7 +78,7 @@ jobs:
           rm -rf ./toDeploy
           rm -rf ./vendor
       - name: Commit
-        if: steps.checkTag.outputs.exists != 'true' && publishOnly == false
+        if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
@@ -89,7 +87,7 @@ jobs:
           git tag ${EXTENSION_VERSION}
           git push origin ${EXTENSION_VERSION}
       - name: Create a GitHub release
-        if: steps.checkTag.outputs.exists != 'true' && publishOnly == false
+        if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
         uses: ncipollo/release-action@v1
         with:
           artifacts: /tmp/${{ inputs.extensionName }}.zip
