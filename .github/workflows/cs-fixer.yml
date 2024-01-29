@@ -17,4 +17,4 @@ jobs:
           tools: php-cs-fixer, cs2pr
 
       - name: Run PHP CS Fixer
-        run: php-cs-fixer fix . --dry-run --rules=@PER-CS2.0 --format=checkstyle | cs2pr
+        run: php-cs-fixer fix . --dry-run --rules=@PER-CS2.0,no_unused_imports --format=checkstyle | cs2pr
