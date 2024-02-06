@@ -49,7 +49,7 @@ jobs:
           path: ${{ inputs.extensionName }}.zip
       - name: Get version
         run: |
-          echo "EXTENSION_VERSION=$(shopware-cli extension get-version)" >> $GITHUB_ENV
+          echo "EXTENSION_VERSION=$(shopware-cli extension get-version .)" >> $GITHUB_ENV
       - name: Check Tag existence
         uses: mukunku/tag-exists-action@v1.6.0
         id: checkTag
