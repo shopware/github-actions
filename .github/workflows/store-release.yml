@@ -71,11 +71,9 @@ jobs:
       - name: Unzip
         if: inputs.publishOnly == false
         run: |
-          unzip -o -q "${{ inputs.extensionName }}.zip" -d ./toDeploy
+          unzip -o -q "${{ inputs.extensionName }}.zip" -d /tmp/toDeploy
           mv "${{ inputs.extensionName }}.zip" /tmp/
-          find ./ -maxdepth 1 ! -name "toDeploy" ! -name ".git" ! -name "." ! -name ".." -exec rm -rf {} \;
-          mv ./toDeploy/${{ inputs.extensionName }}/* ./
-          rm -rf ./toDeploy
+          rsync -av --exclude '.git' --delete /tmp/toDeploy/${{ inputs.extensionName }}/ .
           rm -rf ./vendor
       - name: Commit
         if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
