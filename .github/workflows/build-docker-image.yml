@@ -35,7 +35,7 @@ jobs:
           uses: FriendsOfShopware/shopware-cli-action@v1
 
         - name: Install Bun
-          uses: oven-sh/setup-bun@v1
+          uses: oven-sh/setup-bun@v2
           if: inputs.use-bun == true
           with:
             bun-version: ${{ inputs.bun-version }}
