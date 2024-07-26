@@ -119,3 +119,40 @@ jobs:
           secrets:
             env: MY_EXTENSION_TOKEN=${{ secrets.MY_EXTENSION_TOKEN }}
 ```
+
+## Downstream
+Trigger a downstream pipeline in a project and wait for it to finish.
+Job fails if downstream fails.
+
+You need to configure octo-sts in the downstream to allow your project to trigger a action.
+
+Example how to use the downstream workflow:
+```yaml
+jobs:
+    downstream:
+        uses: shopware/github-actions/.github/workflows/downstream.yml@main
+        with:
+          repo: shopware/MyExtension
+          ref: trunk # default is "main"
+          identity: platform
+          workflow: downstream.yml
+```
+
+In your downstream workflow you also need to add the following info, so the upstream workflow is able to find the downstream run:
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_id:
+        description: "Run ID of upstream"
+        required: false
+
+jobs:
+  id:
+    name: Upstream ID identifier
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.upstream_id != ''
+    steps:
+      - name: ${{github.event.inputs.upstream_id}}
+        run: "echo upstream run id: ${{ inputs.upstream_id }}"
+```
