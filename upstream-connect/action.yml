@@ -1,0 +1,33 @@
+name: "Upstream connect"
+description: |
+  Connect to upstream from downstream run
+
+  The input upstream_data needs to be added to the workflow_dispatch event
+
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  upstream_data:
+    required: true
+    description: |
+      upstream data. You need to passthrough the input from the workflow_dispatch event
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: ${{ fromJSON(inputs.upstream_data).upstream.id }}
+      name: ${{ fromJSON(inputs.upstream_data).upstream.id }}
+      env:
+        RUN_URL: "${{ fromJSON(inputs.upstream_data).upstream.url }}"
+      run: echo "Triggered by upstream from this workflow run $RUN_URL"
+    - name: Set environment variables
+      if: ${{ fromJSON(inputs.upstream_data).env }}
+      shell: bash
+      env:
+        UPSTREAM_ENV: "${{ fromJSON(inputs.upstream_data).env }}"
+      run: |
+        echo "${UPSTREAM_ENV}" >> $GITHUB_ENV

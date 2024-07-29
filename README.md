@@ -1,6 +1,8 @@
-# Reuseable GitHub Actions for Shopware Extensions
+# Reusable GitHub Actions and Workflows for Shopware Extensions
 
-## cs-fixer
+## Workflows
+
+### cs-fixer
 
 Installs PHP-CS-Fixer and runs [PER Coding Style 2.0](https://www.php-fig.org/per/coding-style/) through the Plugin.
 
@@ -10,7 +12,7 @@ jobs:
         uses: shopware/github-actions/.github/workflows/cs-fixer.yml@main
 ```
 
-## phpstan
+### phpstan
 
 Installs PHPStan together with Shopware and the Extension and runs PHPStan
 
@@ -25,7 +27,7 @@ jobs:
           shopwareVersion: 6.5.x
 ```
 
-## PHPUnit
+### PHPUnit
 
 ```yaml
 jobs:
@@ -52,7 +54,7 @@ jobs:
       codecovToken: ${{ secrets.CODECOV_TOKEN }}
 ```
 
-## Build Zip
+### Build Zip
 
 Builds the Extension zip and validates the Zip using shopware-cli
 
@@ -65,7 +67,7 @@ jobs:
       extensionName: MyExtensionName
 ```
 
-## Store Upload
+### Store Upload
 
 Upload the Extension with the given Shopware Account credentials into the Account. It is recommended to use the `workflow_dispatch` event, so you have to manually trigger this from the Actions Tab.
 
@@ -84,7 +86,7 @@ jobs:
       ghToken: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-## Extension Dependencies (For PHPUnit & phpstan)
+### Extension Dependencies (For PHPUnit & phpstan)
 
 If your extension has dependencies, you can specify them with the `dependencies` input and they will also be installed. The
 input should a JSON array of objects containing the extension name and repository URL:
@@ -120,39 +122,68 @@ jobs:
             env: MY_EXTENSION_TOKEN=${{ secrets.MY_EXTENSION_TOKEN }}
 ```
 
-## Downstream
+## Actions
+
+### Downstream
+
 Trigger a downstream pipeline in a project and wait for it to finish.
 Job fails if downstream fails.
 
-You need to configure octo-sts in the downstream to allow your project to trigger a action.
+You need to configure octo-sts in the downstream to allow your project to trigger a action or pass a token that has permissions to trigger the workflow.
 
-Example how to use the downstream workflow:
+Example how to use the downstream action:
 ```yaml
+permissions:
+  id-token: write
+
 jobs:
-    downstream:
-        uses: shopware/github-actions/.github/workflows/downstream.yml@main
+  downstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shopware/github-actions/downstream@main
         with:
-          repo: shopware/MyExtension
-          ref: trunk # default is "main"
-          identity: platform
-          workflow: downstream.yml
+          repo: shopware/actions-test
+          workflow: test
+          ref: trunk
 ```
 
-In your downstream workflow you also need to add the following info, so the upstream workflow is able to find the downstream run:
+In your downstream workflow you also need to use the upstream-connect action:
+
 ```yaml
 on:
   workflow_dispatch:
     inputs:
-      upstream_id:
-        description: "Run ID of upstream"
+      upstream_data:
         required: false
 
 jobs:
   id:
-    name: Upstream ID identifier
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.upstream_id != ''
     steps:
-      - name: ${{github.event.inputs.upstream_id}}
-        run: "echo upstream run id: ${{ inputs.upstream_id }}"
+      - if: ${{ inputs.upstream_data }}
+        uses: shopware/github-actions/upstream-connect@main
+        with:
+          upstream_data: ${{ inputs.upstream_data }}
 ```
+
+To make it work with [octo-sts](https://github.com/octo-sts/app) you need to add a trust policy like this:
+
+```yaml
+# .github/chainguard/upstream.yaml
+
+issuer: https://token.actions.githubusercontent.com
+subject: repo:shopware/shopware:ref:refs/heads/main
+# you can also use subject_pattern, if you want to use regex
+
+claim_pattern:
+  # restrict to a specificy upstream workflow
+  job_workflow_ref: shopware/shopware/.github/workflows/downstream.yml@refs/heads/.*
+
+permissions:
+  actions: write
+
+```
+
+This policy only allows the `main` ref with the `downstream.yml` workflow of the `shopware/shopware` repository to get a token with the `actions:write` permissions.
+
+You should make this as specific as possible.
