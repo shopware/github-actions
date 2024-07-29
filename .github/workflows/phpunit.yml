@@ -54,7 +54,7 @@ jobs:
       - name: Setup Shopware
         uses: shopware/setup-shopware@main
         with:
-          shopware-version:  ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+          shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
           php-version: ${{ inputs.phpVersion }}
           mysql-version: ${{ inputs.mysqlVersion }}
           php-extensions: pcov

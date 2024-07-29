@@ -1,0 +1,41 @@
+name: "Build Extension Zip"
+description: "Builds the extension and uploads a zip of it"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  extensionName:
+    description: "Your extension name"
+    required: true
+
+outputs:
+  artifact-id:
+    description: A unique identifier for the artifact that was just uploaded
+    value: ${{ steps.upload.outputs.artifact-id }}
+  artifact-url:
+    description: A download URL for the artifact that was just uploaded
+    value: ${{ steps.upload.outputs.artifact-url }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    - name: Install shopware-cli
+      uses: FriendsOfShopware/shopware-cli-action@v1
+    - name: Build
+      shell: bash
+      run: shopware-cli extension zip . --git-commit "${{ github.sha }}"
+    - name: Rename
+      shell: bash
+      run: mv ${{ inputs.extensionName }}-${{ github.sha }}.zip ${{ inputs.extensionName }}.zip
+    - name: Validate
+      shell: bash
+      run: shopware-cli extension validate ${{ inputs.extensionName }}.zip
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      id: upload
+      with:
+        name: ${{ inputs.extensionName }}.zip
+        path: ${{ inputs.extensionName }}.zip

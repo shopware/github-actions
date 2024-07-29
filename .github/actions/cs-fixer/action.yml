@@ -1,0 +1,22 @@
+name: cs-fixer
+description: "PHP-CS-Fixer action"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.2
+        tools: php-cs-fixer, cs2pr
+
+    - name: Run PHP CS Fixer
+      shell: bash
+      run: php-cs-fixer fix . --dry-run --rules=@PER-CS2.0,no_unused_imports --format=checkstyle | cs2pr
