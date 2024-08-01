@@ -6,6 +6,10 @@ on:
           description: 'Your extension name'
           required: true
           type: string
+        shopwareVersion:
+          required: false
+          type: string
+          default: 'trunk'
 
 jobs:
   run:
@@ -15,8 +19,8 @@ jobs:
       - name: Clone Shopware
         uses: actions/checkout@v4
         with:
-         repository: shopware/shopware
-         ref: trunk
+          repository: shopware/shopware
+          ref: ${{ inputs.shopwareVersion }}
 
       - name: Clone Extension
         uses: actions/checkout@v4
