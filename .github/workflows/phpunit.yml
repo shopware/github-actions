@@ -7,9 +7,17 @@ on:
         required: true
         type: string
       shopwareVersion:
+        description: |
+          With the default `.auto`, the workflow tries to find a shopware version using the shopware-version action.
+
+          For example, if the current ref is next-1234, it will try to find the ref next-1234 in shopware/shopware. If there's no matching ref, it will use shopwareVersionFallback
         required: false
         type: string
-        default: 'trunk'
+        default: '.auto'
+      shopwareVersionFallback:
+        required: false
+        type: string
+        default: trunk
       phpVersion:
         required: false
         type: string
@@ -38,10 +46,15 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
+      - uses: shopware/github-actions/.github/actions/shopware-version@main
+        with:
+          fallback: ${{ inputs.shopwareVersionFallback }}
+        id: version
+        if: ${{ inputs.shopwareVersion == '.auto' }}
       - name: Setup Shopware
         uses: shopware/setup-shopware@main
         with:
-          shopware-version: ${{ inputs.shopwareVersion }}
+          shopware-version:  ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
           php-version: ${{ inputs.phpVersion }}
           mysql-version: ${{ inputs.mysqlVersion }}
           php-extensions: pcov
