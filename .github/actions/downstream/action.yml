@@ -1,0 +1,92 @@
+name: "Downstream workflow"
+description: "Trigger a downstream worflow in another repository"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  repo:
+    description: "Downstream repo"
+    required: true
+  workflow:
+    description: "Workflow to dispatch in downstream"
+    required: true
+  ref:
+    description: "Downstream ref"
+    required: false
+    default: "main"
+  env:
+    description: |
+      Environment variables to pass to the downstream workflow
+
+      Example:
+      ```shell
+      PLATFORM_BRANCH=trunk
+      FOO=bar
+      ```
+    required: false
+    default: ""
+  identity:
+    description: "Identity for octo-sts"
+    required: true
+    default: "upstream"
+  token:
+    description: Token used to authenticate with the downstream repo. If not provided octo-sts is used
+    required: false
+    default: ""
+  timeout:
+    description: Timeout for the downstream
+    required: false
+    default: "30m"
+
+outputs:
+  run_id:
+    description: The run id of the downstream workflow
+    value: "${{ steps.wait.downstream_run_id }}"
+  run_url:
+    description: The api url of the downstream workflow
+    value: "${{ steps.wait.downstream_run_url }}"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - uses: octo-sts/action@v1.0.0
+      if: ${{ ! inputs.token }}
+      id: sts
+      with:
+        scope: ${{ inputs.repo }}
+        identity: ${{ inputs.identity }}
+    - name: List workflows test
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token || steps.sts.outputs.token }}
+      run: gh workflow list --repo "${{ inputs.repo }}"
+    - name: Trigger Downstream
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token || steps.sts.outputs.token }}
+        UPSTREAM_DATA: |
+          {
+            "upstream": {
+              "id": "${{ github.run_id }}",
+              "ref": "${{ github.ref }}",
+              "repo": "${{ github.repository }}",
+              "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            },
+            "env": "${{ inputs.env }}"
+          }
+        WORKFLOW: ${{ inputs.workflow }}
+        REPO: ${{ inputs.repo }}
+        REF: ${{ inputs.ref }}
+      run: gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF" -f upstream_data="$UPSTREAM_DATA"
+    - name: Wait for conclusion
+      shell: bash
+      id: wait
+      env:
+        GH_TOKEN: ${{ inputs.token || steps.sts.outputs.token }}
+        WORKFLOW: ${{ inputs.workflow }}
+        REPO: ${{ inputs.repo }}
+      run: timeout "${{ inputs.timeout }}" ${{ github.action_path }}/wait.bash "$REPO" "$WORKFLOW" "${{ github.run_id }}"

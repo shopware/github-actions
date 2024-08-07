@@ -51,6 +51,11 @@ runs:
       with:
         node-version: "20.x"
 
+    - name: Install admin deps
+      shell: bash
+      working-directory: src/Administration/Resources/app/administration
+      run: npm ci --no-audit --no-fund --prefer-offline
+
     - name: Install Plugin Dependencies
       shell: bash
       working-directory: custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}
