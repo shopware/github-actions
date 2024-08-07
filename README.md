@@ -156,3 +156,24 @@ jobs:
       - name: ${{github.event.inputs.upstream_id}}
         run: "echo upstream run id: ${{ inputs.upstream_id }}"
 ```
+
+
+
+```yaml
+  on:
+    workflow_dispatch:
+      inputs:
+        upstream_id:
+          required: false
+        upstream_repo:
+          required: false
+
+  jobs:
+    id:
+      runs-on: ubuntu-latest
+      - if: ${{ inputs.upstream_id }}
+        uses: shopware/github-actions/.github/actions/upstream-connect@main
+        with:
+          upstream_id: ${{ inputs.supstream_id }}
+          upstream_repo: ${{ inputs.upstream_repo }}
+  ```

@@ -1,0 +1,60 @@
+name: "Downstream workflow"
+description: "Trigger a downstream worflow in another repository"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  repo:
+    description: "Downstream repo"
+    required: true
+  ref:
+    description: "Downstream ref"
+    required: false
+    default: "main"
+  identity:
+    description: "Identity for octo-sts"
+    required: true
+    default: "upstream"
+  workflow:
+    description: "Workflow to dispatch in downstream"
+    required: true
+
+outputs:
+  run_id:
+    description: The run id of the downstream workflow
+    value: ""
+  run_url:
+    description: The api url of the downstream workflow
+    value: ""
+
+runs:
+  using: "composite"
+  steps:
+    - uses: octo-sts/action@v1.0.0
+      id: sts
+      with:
+        scope: ${{ inputs.repo }}
+        identity: ${{ inputs.identity }}
+    - name: Trigger Downstream
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ steps.sts.outputs.token }}
+      run: >
+        gh workflow run "${{ inputs.workflow }}" 
+          --ref "${{ inputs.ref }}" 
+          --repo "{{ inputs.repo }}" 
+          -f upstream_id="${{ github.run_id }}"
+          -f upstream_ref="${{ github.ref }}"
+          -f upstream_repo="${{ github.repository }}"
+    - name: Get Downstream Run ID
+      shell: bash
+      id: get_downstream_id
+      env:
+        GITHUB_TOKEN: ${{ steps.sts.outputs.token }}
+      run: ${{ github.action_path }}/.github/scripts/get_downstream_run.sh "${{ inputs.repo }}" "${{ github.run_id }}"
+
+    - name: Check downstream pipeline
+      shell: bash
+      run: ${{ github.action_path }}/.github/scripts/wait_for_downstream.sh "${{ inputs.repo }}" "${{ steps.sts.outputs.token }}" "${{ steps.get_downstream_id.outputs.downstream_run_id }}"

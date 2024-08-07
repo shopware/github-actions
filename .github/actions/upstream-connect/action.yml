@@ -1,0 +1,30 @@
+name: "Upstream connect"
+description: |
+  Connect to upstream from downstream run
+
+  The inputs upstream_id and upstream_repo need to be added to the workflow_dispatch event
+
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  upstream_id:
+    required: true
+    description: |
+      Workflow run id passed into the workflow
+  upstream_repo:
+    required: true
+    description: |
+      Upstream repo passed into the workflow
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: ${{ inputs.upstream_id }}
+      name: ${{ inputs.upstream_id }}
+      env:
+        RUN_URL: "https://github.com/${{ inputs.upstream_repo }}/actions/runs/${{ inputs.upstream_id }}"
+      run: echo "Triggered by upstream from this workflow run $RUN_URL"
