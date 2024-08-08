@@ -1,0 +1,19 @@
+name: "Danger"
+description: "Executes Danger checks"
+author: "shopware AG"
+branding:
+  color: "yellow"
+  icon: "warning"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Danger
+      uses: docker://ghcr.io/shyim/danger-php:latest
+      with:
+        args: ci
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}
