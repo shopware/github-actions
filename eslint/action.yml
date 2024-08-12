@@ -1,5 +1,5 @@
 name: ESLint
-description: "Lint source with eslint"
+description: "Lint source"
 author: "shopware AG"
 branding:
   color: "blue"
@@ -26,6 +26,14 @@ inputs:
     description: Fallback version in case there's no matching branch
     required: false
     default: trunk
+  forceInstallAdminDeps:
+    description: Install platform admin deps
+    default: ""
+    required: false
+  forceInstallStorefrontDeps:
+    description: Install platform storefront deps
+    default: ""
+    required: false
 
 runs:
   using: "composite"
@@ -53,7 +61,14 @@ runs:
 
     - name: Install admin deps
       shell: bash
+      if: ${{ inputs.forceInstallAdminDeps || contains(inputs.projectPath, 'administration') }}
       working-directory: src/Administration/Resources/app/administration
+      run: npm ci --no-audit --no-fund --prefer-offline
+
+    - name: Install storefront deps
+      shell: bash
+      if: ${{ inputs.forceInstallStorefrontDeps || contains(inputs.projectPath, 'storefront') }}
+      working-directory: src/Storefront/Resources/app/storefront
       run: npm ci --no-audit --no-fund --prefer-offline
 
     - name: Install Plugin Dependencies
@@ -61,7 +76,7 @@ runs:
       working-directory: custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}
       run: npm install --no-audit --no-fund --prefer-offline
 
-    - name: Run ESLint
+    - name: Run Lint command
       shell: bash
       working-directory: custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}
       run: npm run ${{ inputs.npmLintCmd }}
