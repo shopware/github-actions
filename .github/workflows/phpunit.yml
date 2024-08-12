@@ -46,7 +46,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: shopware/github-actions/.github/actions/shopware-version@main
+      - uses: shopware/github-actions/shopware-version@main
         with:
           fallback: ${{ inputs.shopwareVersionFallback }}
         id: version
@@ -54,7 +54,7 @@ jobs:
       - name: Setup Shopware
         uses: shopware/setup-shopware@main
         with:
-          shopware-version:  ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+          shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
           php-version: ${{ inputs.phpVersion }}
           mysql-version: ${{ inputs.mysqlVersion }}
           php-extensions: pcov

@@ -1,0 +1,67 @@
+name: ESLint
+description: "Lint source with eslint"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  extensionName:
+    description: "Your extension name"
+    required: true
+  projectPath:
+    description: "Path to the js project to be linted. Checks the administartion app by default"
+    default: src/Resources/app/administration
+  npmLintCmd:
+    description: "The npm command to run"
+    default: lint
+  shopwareVersion:
+    description: |
+      With the default `.auto`, the workflow tries to find a shopware version using the shopware-version action.
+
+      For example, if the current ref is next-1234, it will try to find the ref next-1234 in shopware/shopware. If there's no matching ref, it will use shopwareVersionFallback
+    required: false
+    default: ".auto"
+  shopwareVersionFallback:
+    description: Fallback version in case there's no matching branch
+    required: false
+    default: trunk
+
+runs:
+  using: "composite"
+  steps:
+    - uses: shopware/github-actions/shopware-version@main
+      with:
+        fallback: ${{ inputs.shopwareVersionFallback }}
+      id: version
+      if: ${{ inputs.shopwareVersion == '.auto' }}
+    - name: Clone Shopware
+      uses: actions/checkout@v4
+      with:
+        repository: shopware/shopware
+        ref: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+
+    - name: Clone Extension
+      uses: actions/checkout@v4
+      with:
+        path: custom/plugins/${{ inputs.extensionName }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20.x"
+
+    - name: Install admin deps
+      shell: bash
+      working-directory: src/Administration/Resources/app/administration
+      run: npm ci --no-audit --no-fund --prefer-offline
+
+    - name: Install Plugin Dependencies
+      shell: bash
+      working-directory: custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}
+      run: npm install --no-audit --no-fund --prefer-offline
+
+    - name: Run ESLint
+      shell: bash
+      working-directory: custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}
+      run: npm run ${{ inputs.npmLintCmd }}

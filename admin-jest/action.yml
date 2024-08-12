@@ -1,0 +1,92 @@
+name: "Admin jest"
+description: "Run administration jest tests"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  extensionName:
+    description: "Your extension name"
+    required: true
+  shopwareVersion:
+    description: |
+      With the default `.auto`, the workflow tries to find a shopware version using the shopware-version action.
+
+      For example, if the current ref is next-1234, it will try to find the ref next-1234 in shopware/shopware. If there's no matching ref, it will use shopwareVersionFallback
+    required: false
+    default: ".auto"
+  shopwareVersionFallback:
+    description: Fallback version in case there's no matching branch
+    required: false
+    default: trunk
+  uploadCoverage:
+    description: "Upload coverage to codecov. Requires token in CODECOV_TOKEN"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: shopware/github-actions/shopware-version@main
+      with:
+        fallback: ${{ inputs.shopwareVersionFallback }}
+      id: version
+      if: ${{ inputs.shopwareVersion == '.auto' }}
+    - name: Setup Shopware
+      uses: shopware/setup-shopware@main
+      with:
+        shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+        php-version: 8.2
+        env: prod
+        install: "true"
+
+    - name: Clone Extension
+      uses: actions/checkout@v4
+      with:
+        path: custom/plugins/${{ inputs.extensionName }}
+
+    - name: Refresh Plugins
+      shell: bash
+      run: php bin/console plugin:refresh
+
+    - name: Install Plugin
+      shell: bash
+      run: php bin/console plugin:install --activate ${{ inputs.extensionName }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20.x"
+
+    - name: Install Administration dependencies
+      shell: bash
+      working-directory: src/Administration/Resources/app/administration
+      run: npm install --no-audit --no-fund --prefer-offline
+
+    - name: Prepare Jest environment
+      shell: bash
+      working-directory: src/Administration/Resources/app/administration
+      run: npm run unit-setup
+
+    - name: Generate Entity Schema
+      shell: bash
+      run: php bin/console framework:schema -s 'entity-schema' src/Administration/Resources/app/administration/test/_mocks_/entity-schema.json
+
+    - name: Install Plugin Dependencies
+      shell: bash
+      working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
+      run: npm install --no-audit --no-fund --prefer-offline
+
+    - name: Jest Unit Tests
+      shell: bash
+      working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
+      run: npm run unit -- --coverage
+
+    - name: Upload Coverage
+      if: inputs.uploadCoverage == true
+      uses: codecov/codecov-action@v4
+      with:
+        root_dir: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
+        working-directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
+        directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration

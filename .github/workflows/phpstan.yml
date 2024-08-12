@@ -31,7 +31,7 @@ jobs:
     name: Static Analyse
     runs-on: ubuntu-latest
     steps:
-      - uses: shopware/github-actions/.github/actions/shopware-version@main
+      - uses: shopware/github-actions/shopware-version@main
         with:
           fallback: ${{ inputs.shopwareVersionFallback }}
         id: version
