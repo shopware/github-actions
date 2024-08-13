@@ -1,0 +1,190 @@
+name: "Setup extension"
+description: "Checkout shopware and extension. Optionally, install dependencies and setup db"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  extensionName:
+    description: "Your extension name"
+    required: true
+  shopwareVersion:
+    description: |
+      With the default `.auto`, the workflow tries to find a shopware version using the shopware-version action.
+
+      For example, if the current ref is next-1234, it will try to find the ref next-1234 in shopware/shopware. If there's no matching ref, it will use shopwareVersionFallback
+    required: false
+    default: ".auto"
+  shopwareVersionFallback:
+    description: Fallback version in case there's no matching branch
+    required: false
+    default: trunk
+  phpVersion:
+    description: PHP version to use
+    required: false
+    default: "8.2"
+  mysqlVersion:
+    description: Mysql image to use or buildin to use the builtin mysql
+    required: false
+    default: "builtin"
+  node-version:
+    description: nodejs version to use
+    required: false
+    default: "20.x"
+
+  dependencies:
+    description: JSON list defining dependencies
+    required: false
+
+  extraRepositories:
+    description: |
+      Additional composer repositories
+      Example:
+        {
+          "customRepo": {
+            "type": "vcs",
+            "url": "https://my-custom-repo.example.test/foo/bar.git"
+          }
+        }
+    default: ""
+
+  install:
+    description: Whether to install Shopware or not
+    required: false
+    default: ""
+
+  installAdmin:
+    description: Whether to install administration npm dependencies
+    required: false
+    default: ""
+
+  installStorefront:
+    description: Whether to install storefront npm dependencies
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - uses: shopware/github-actions/shopware-version@main
+      with:
+        fallback: ${{ inputs.shopwareVersionFallback }}
+      id: version
+      if: ${{ inputs.shopwareVersion == '.auto' }}
+    - name: Setup Shopware
+      uses: shopware/setup-shopware@feat-add-adminInstall-input
+      with:
+        shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+        php-version: ${{ inputs.phpVersion }}
+        mysql-version: ${{ inputs.mysqlVersion }}
+        node-version: ${{ inputs.node-version }}
+        install: ${{ inputs.install }}
+        installAdmin: ${{ inputs.installAdmin }}
+        php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov
+        keep-composer-tools: false
+
+    - name: Clone Extension
+      uses: actions/checkout@v4
+      with:
+        path: custom/plugins/${{ inputs.extensionName }}
+
+    - name: Make composer config adjustments
+      shell: bash
+      run: |
+        composer config prefer-stable true
+        composer config minimum-stability dev
+
+        AUTOLOAD_DEV="$(jq '."autoload-dev"."psr-4" | to_entries | map({"key": .key, "value": "custom/plugins/${{ inputs.extensionName }}/\(.value)"}) | from_entries' < custom/plugins/${{ inputs.extensionName }}/composer.json)"
+        jq -s '.[0] * {"repositories": .[1]} * {"autoload-dev": {"psr-4": .[2]}}' composer.json <(echo '${{ inputs.extraRepositories }}') <(echo "$AUTOLOAD_DEV") > composer.json.new
+        mv composer.json.new composer.json
+
+        cat composer.json
+
+    - name: Add extra repositories
+      if: ${{ inputs.extraRepositories }}
+      shell: bash
+      run: |
+
+    - name: Clone Dependencies
+      shell: bash
+      if: inputs.dependencies
+      env:
+        DEPS: ${{ inputs.dependencies }}
+      run: |
+        for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do
+          dep_name=$(echo "$dep" | jq -r '.name')
+          dep_repo=$(echo "$dep" | jq -r '.repo')
+          git clone "$dep_repo" "custom/plugins/$dep_name"
+        done
+
+    - name: Install dependencies with Composer
+      if: inputs.dependencies
+      env:
+        DEPS: ${{ inputs.dependencies }}
+      shell: bash
+      run: |
+        IFS=$'\n'
+        for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do
+          dep_name=$(echo "$dep" | jq -r '.name')
+          composer require $(composer -d "custom/plugins/$dep_name" config name)
+        done
+
+    - name: Install extension with Composer
+      shell: bash
+      run: composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name)
+
+    - name: Refresh Plugins
+      if: ${{ inputs.install }}
+      shell: bash
+      run: php bin/console plugin:refresh
+
+    - name: Install extension dependencies
+      if: ${{ inputs.install && inputs.dependencies }}
+      shell: bash
+      run: |
+        IFS=$'\n'
+        for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do
+          dep_name=$(echo "$dep" | jq -r '.name')
+          bin/console plugin:install --activate $dep_name
+        done
+
+    - name: Install Plugin
+      if: ${{ inputs.install }}
+      shell: bash
+      run: php bin/console plugin:install --activate ${{ inputs.extensionName }}
+
+    # TODO: install deps for all bundles (bin/ci bundle:dump -> foreach bundle in var/plugins.json)
+    - name: Install extension admin deps
+      if: ${{ inputs.installAdmin }}
+      shell: bash
+      run: |
+        if [[ -r "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration/package.json" ]]; then
+          (cd "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration/" && npm ci --no-audit --no-fund --prefer-offline)
+        fi
+
+    - name: Install storefront deps
+      if: ${{ inputs.installStorefront }}
+      shell: bash
+      working-directory: src/Storefront/Resources/app/storefront
+      run: npm ci --no-audit --no-fund --prefer-offline
+
+    # TODO: install deps for all bundles
+    - name: Install extension storefront deps
+      if: ${{ inputs.installStorefront }}
+      shell: bash
+      run: |
+        if [[ -r "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/storefront/package.json" ]]; then
+          (cd "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/storefront/" && npm ci --no-audit --no-fund --prefer-offline)
+        fi
+
+    - name: Prepare Jest environment
+      if: ${{ inputs.install && inputs.installAdmin }}
+      shell: bash
+      working-directory: src/Administration/Resources/app/administration
+      run: npm run unit-setup
+
+    - name: Entity schema
+      if: ${{ inputs.install && inputs.installAdmin }}
+      shell: bash
+      run: composer admin:generate-entity-schema-types

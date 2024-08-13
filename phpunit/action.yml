@@ -68,7 +68,12 @@ runs:
         done
     - name: Install extension with Composer
       shell: bash
-      run: composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name)
+      run: |
+        composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name)
+        if [[ ! -L "custom/plugins/${{ inputs.extensionName }}" ]]; then
+          echo "custom/plugins/${{ inputs.extensionName }} should be a symlink"
+          exit 1
+        fi
     - name: Run PHPUnit
       shell: bash
       working-directory: custom/plugins/${{ inputs.extensionName }}
