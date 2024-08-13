@@ -1,0 +1,37 @@
+name: "PHPStan"
+description: "phpstan"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  extensionName:
+    description: "Your extension name"
+    required: true
+  cacheDir:
+    description: PHPStan cache dir
+    default: ${{ github.workspace }}/var/phpstan
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create phpstan.neon
+      working-directory: custom/plugins/${{ inputs.extensionName }}
+      shell: bash
+      run: |
+        printf "parameters:\n  tmpDir: ${{ inputs.cacheDir }}\nincludes:\n  - phpstan.neon.dist" > phpstan.neon
+    - name: PHPStan cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.cacheDir }}
+        key: ${{ runner.OS }}-${{ github.repository }}-phpstan-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.OS }}-${{ github.repository }}-phpstan-
+    - name: Build PHPStan Bootstrap
+      shell: bash
+      run: php ${{ github.workspace }}/src/Core/DevOps/StaticAnalyze/phpstan-bootstrap.php
+    - name: Run PHPStan
+      shell: bash
+      working-directory: custom/plugins/${{ inputs.extensionName }}
+      run: ${{ github.workspace }}/vendor/bin/phpstan analyze --error-format=github --no-progress
