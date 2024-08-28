@@ -6,7 +6,7 @@ on:
         required: false
     inputs:
       extensionName:
-        description: 'Your extension name'
+        description: "Your extension name"
         required: true
         type: string
       shopwareVersion:
@@ -16,7 +16,7 @@ on:
           For example, if the current ref is next-1234, it will try to find the ref next-1234 in shopware/shopware. If there's no matching ref, it will use shopwareVersionFallback
         required: false
         type: string
-        default: '.auto'
+        default: ".auto"
       shopwareVersionFallback:
         required: false
         type: string
@@ -37,12 +37,12 @@ jobs:
         id: version
         if: ${{ inputs.shopwareVersion == '.auto' }}
       - name: Setup Shopware
-        uses: shopware/setup-shopware@main
+        uses: shopware/setup-shopware@fix/ignore-cache
         with:
-          shopware-version:  ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+          shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
           php-version: 8.2
           env: prod
-          install: 'true'
+          install: "true"
       - name: Clone Extension
         uses: actions/checkout@v4
         with:
