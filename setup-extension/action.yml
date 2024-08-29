@@ -81,7 +81,7 @@ runs:
         node-version: ${{ inputs.node-version }}
         install: ${{ inputs.install }}
         installAdmin: ${{ inputs.installAdmin }}
-        php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov
+        php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov, :odbc, :pdo_dblib, :pdo_firebird, :pdo_odbc, :pdo_sqlsrv, :sqlsrv
 
     - name: Clone Extension
       uses: actions/checkout@v4
