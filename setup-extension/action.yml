@@ -81,7 +81,7 @@ runs:
         node-version: ${{ inputs.node-version }}
         install: ${{ inputs.install }}
         installAdmin: ${{ inputs.installAdmin }}
-        php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov
+        php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov, zip
 
     - name: Clone Extension
       uses: actions/checkout@v4
@@ -132,8 +132,10 @@ runs:
       run: php bin/console plugin:refresh
 
     - name: Install extension dependencies
-      if: ${{ inputs.installAdmin && inputs.dependencies }}
+      if: ${{ inputs.install && inputs.dependencies }}
       shell: bash
+      env:
+        DEPS: ${{ inputs.dependencies }}
       run: |
         IFS=$'\n'
         for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do
