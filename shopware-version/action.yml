@@ -35,8 +35,13 @@ runs:
         if [[ -n "$remote_ref" ]]; then
           version="${remote_ref#"refs/heads/"}"
         else
-          echo "No matching branch found, using fallback"
-          version="${{ inputs.fallback }}"
+          remote_ref=$(git ls-remote --heads "https://github.com/shopware/shopware" refs/heads/${{ github.base_ref }} | cut -f 2)
+          if [[ -n "$remote_ref" ]]; then
+            version="${remote_ref#"refs/heads/"}"
+          else
+            echo "No matching branch found, using fallback"
+            version="${{ inputs.fallback }}"
+          fi
         fi
 
         echo "Matching shopware version: $version"
