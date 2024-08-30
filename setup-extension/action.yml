@@ -47,7 +47,7 @@ inputs:
             "url": "https://my-custom-repo.example.test/foo/bar.git"
           }
         }
-    default: ""
+    default: "{}"
 
   install:
     description: Whether to install Shopware or not
