@@ -33,6 +33,11 @@ inputs:
     required: false
     default: "20.x"
 
+  composer-options:
+    description: "Additional composer options"
+    required: false
+    default: ""
+
   dependencies:
     description: JSON list defining dependencies
     required: false
@@ -47,7 +52,7 @@ inputs:
             "url": "https://my-custom-repo.example.test/foo/bar.git"
           }
         }
-    default: ""
+    default: "{}"
 
   install:
     description: Whether to install Shopware or not
@@ -73,7 +78,7 @@ runs:
       id: version
       if: ${{ inputs.shopwareVersion == '.auto' }}
     - name: Setup Shopware
-      uses: shopware/setup-shopware@main
+      uses: shopware/setup-shopware@debug-composer-install
       with:
         shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
         php-version: ${{ inputs.phpVersion }}
@@ -82,6 +87,7 @@ runs:
         install: ${{ inputs.install }}
         installAdmin: ${{ inputs.installAdmin }}
         php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov, zip
+        composer-options: ${{ inputs.composer-options }}
 
     - name: Clone Extension
       uses: actions/checkout@v4
