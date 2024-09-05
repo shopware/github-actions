@@ -64,6 +64,11 @@ inputs:
     required: false
     default: ""
 
+  env:
+    description: Environment for Shopware
+    required: false
+    default: "test"
+
 runs:
   using: "composite"
   steps:
@@ -81,6 +86,8 @@ runs:
         node-version: ${{ inputs.node-version }}
         install: ${{ inputs.install }}
         installAdmin: ${{ inputs.installAdmin }}
+        installStorefront: ${{ inputs.installStorefront }}
+        env: ${{ inputs.env }}
         php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov, zip
 
     - name: Clone Extension
