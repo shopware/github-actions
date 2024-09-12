@@ -21,7 +21,7 @@ runs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: 8.2
-        tools: php-cs-fixer, cs2pr
+        tools: php-cs-fixer:3.63.2, cs2pr
 
     - name: Run PHP CS Fixer
       shell: bash
