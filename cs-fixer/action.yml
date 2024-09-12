@@ -5,6 +5,12 @@ branding:
   color: "blue"
   icon: "download"
 
+inputs:
+  rules:
+    required: false
+    default: "@PER-CS2.0,no_unused_imports"
+    description: Default rules to check with php-cs-fixer
+
 runs:
   using: "composite"
   steps:
@@ -15,8 +21,12 @@ runs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: 8.2
-        tools: php-cs-fixer, cs2pr
+        tools: php-cs-fixer:3.63.2, cs2pr
 
     - name: Run PHP CS Fixer
       shell: bash
-      run: php-cs-fixer fix . --dry-run --rules=@PER-CS2.0,no_unused_imports --format=checkstyle | cs2pr
+      run: |
+        if [[ -n "${{ inputs.rules }}" ]]; then
+          export RULES="--rules=${{ inputs.rules }}"
+        fi
+        php-cs-fixer fix . --dry-run ${RULES} --format=checkstyle | cs2pr
