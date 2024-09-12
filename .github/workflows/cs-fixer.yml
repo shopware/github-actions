@@ -1,6 +1,12 @@
 name: Run PHP-CS-Fixer
 on:
   workflow_call:
+    inputs:
+      rules:
+        type: string
+        required: false
+        default: "@PER-CS2.0,no_unused_imports"
+        description: Default rules to check with php-cs-fixer
 
 jobs:
   run:
@@ -17,4 +23,8 @@ jobs:
           tools: php-cs-fixer, cs2pr
 
       - name: Run PHP CS Fixer
-        run: php-cs-fixer fix . --dry-run --rules=@PER-CS2.0,no_unused_imports --format=checkstyle | cs2pr
+        run: |
+          if [[ -n "${{ inputs.rules }}" ]]; then
+            export RULES="--rules=${{ inputs.rules }}"
+          fi
+          php-cs-fixer fix . --dry-run ${RULES} --format=checkstyle | cs2pr
