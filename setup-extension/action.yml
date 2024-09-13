@@ -69,6 +69,11 @@ inputs:
     required: false
     default: "test"
 
+  keep-composer-tools:
+    description: "Keep Shopware Composer tools (PHPStan, ECS, BC-Checker)"
+    required: false
+    default: "false"
+
 runs:
   using: "composite"
   steps:
@@ -87,6 +92,7 @@ runs:
         install: ${{ inputs.install }}
         installAdmin: ${{ inputs.installAdmin }}
         installStorefront: ${{ inputs.installStorefront }}
+        keep-composer-tools: ${{ inputs.keep-composer-tools }}
         env: ${{ inputs.env }}
         php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov, zip
 
