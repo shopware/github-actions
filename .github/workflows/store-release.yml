@@ -15,6 +15,11 @@ on:
         required: false
         type: boolean
         default: false
+      path:
+        description: "Path to your bundle"
+        required: false
+        type: string
+        default: "."
         
     secrets:
       accountUser:
@@ -40,7 +45,7 @@ jobs:
         env:
           NODE_OPTIONS: --openssl-legacy-provider
         run: |
-          shopware-cli extension zip --git-commit ${{ github.sha }} . --release
+          shopware-cli extension zip --git-commit ${{ github.sha }} "${{ inputs.path }}" --release
           mv ${{ inputs.extensionName }}-${{ github.sha }}.zip ${{ inputs.extensionName }}.zip
       - name: Upload Artefact
         uses: actions/upload-artifact@v4
