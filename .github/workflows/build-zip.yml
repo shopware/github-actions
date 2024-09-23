@@ -6,6 +6,11 @@ on:
         description: 'Your extension name'
         required: true
         type: string
+    path:
+      description: "Path to your bundle"
+      required: false
+      type: string
+      default: "."
 jobs:
   run:
     name: Build and Validate
@@ -15,7 +20,7 @@ jobs:
       - name: Install shopware-cli
         uses: FriendsOfShopware/shopware-cli-action@v1
       - name: Build
-        run: shopware-cli extension zip . --git-commit "${{ github.sha }}"
+        run: shopware-cli extension zip "${{ inputs.path }}" --git-commit "${{ github.sha }}"
       - name: Rename
         run: mv ${{ inputs.extensionName }}-${{ github.sha }}.zip ${{ inputs.extensionName }}.zip
       - name: Validate
