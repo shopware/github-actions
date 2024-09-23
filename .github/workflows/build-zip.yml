@@ -3,14 +3,14 @@ on:
   workflow_call:
     inputs:
       extensionName:
-        description: 'Your extension name'
+        description: "Your extension name"
         required: true
         type: string
-    path:
-      description: "Path to your bundle"
-      required: false
-      type: string
-      default: "."
+      path:
+        description: "Path to your bundle"
+        required: false
+        type: string
+        default: "."
 jobs:
   run:
     name: Build and Validate
