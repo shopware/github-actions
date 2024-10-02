@@ -121,8 +121,14 @@ runs:
           dep_name=$(echo "$dep" | jq -r '.name')
           dep_repo=$(echo "$dep" | jq -r '.repo')
           dep_branch=$(echo "$dep" | jq -r '.branch // empty')
-          git clone "$dep_repo" "custom/plugins/$dep_name"
-          if [ ! -z "${dep_branch}" ]; then
+          dep_token=$(echo "$dep" | jq -r '.token // empty')
+          if [ -n "${dep_token}" ]; then
+            # if a custom token is provided use this token to clone
+            git clone -c "http.${dep_repo}/.extraheader=AUTHORIZATION: basic $(echo -n "x-access-token:${dep_token}" | base64)" "${dep_repo}" "custom/plugins/${dep_name}"
+          else
+            git clone "$dep_repo" "custom/plugins/$dep_name"
+          fi
+          if [ -n "${dep_branch}" ]; then
             git -C custom/plugins/${dep_name} checkout ${dep_branch}
           fi
         done
