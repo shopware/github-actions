@@ -1,0 +1,41 @@
+name: versions
+description: "Action to get the first and latest versions of the current and previous (LTS) major"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  major:
+    description: Current major prefix like v6.6.
+    default: v6.6.
+  lts-major:
+    description: LTS major prefix like v6.5.
+    default: v6.5.
+
+outputs:
+  first-version:
+    description: The first version of the current major
+    value: ${{ steps.get-versions.outputs.CUR_MAJOR_MIN_TAG }}
+  latest-version:
+    description: The latest version of the current major
+    value: ${{ steps.get-versions.outputs.CUR_MAJOR_MAX_TAG }}
+
+  lts-first-version:
+    description: The first version of the lts major
+    value: ${{ steps.get-versions.outputs.PREV_MAJOR_MIN_TAG }}
+  lts-latest-version:
+    description: The latest version of the lts major
+    value: ${{ steps.get-versions.outputs.PREV_MAJOR_MAX_TAG }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get shopware version
+      id: get-versions
+      shell: bash
+      env:
+        CUR_MAJOR: ${{ inputs.major }}
+        PREV_MAJOR: ${{ inputs.lts-major }}
+      run: |
+        ${GITHUB_ACTION_PATH}/print_versions.bash | tee >> "$GITHUB_OUTPUT"
