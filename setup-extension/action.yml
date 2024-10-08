@@ -111,6 +111,8 @@ runs:
         jq -s '.[0] * {"repositories": .[1]} * {"autoload-dev": {"psr-4": .[2]}}' composer.json <(echo '${{ inputs.extraRepositories }}') <(echo "$AUTOLOAD_DEV") > composer.json.new
         mv composer.json.new composer.json
 
+        cat composer.json
+
     - name: Clone Dependencies
       shell: bash
       if: inputs.dependencies
