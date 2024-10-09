@@ -101,7 +101,15 @@ runs:
       with:
         path: custom/plugins/${{ inputs.extensionName }}
 
-    - name: Make composer config adjustments
+    - name: Make composer config adjustments (extension)
+      shell: bash
+      working-directory: custom/plugins/${{ inputs.extensionName }}
+      run: |
+        if jq -e '.require["shopware/core"] != null' composer.json > /dev/null; then
+          composer require 'shopware/core:*' --no-update
+        fi
+
+    - name: Make composer config adjustments (platform)
       shell: bash
       run: |
         composer config prefer-stable true
@@ -110,8 +118,6 @@ runs:
         AUTOLOAD_DEV="$(jq '."autoload-dev"."psr-4" | to_entries | map({"key": .key, "value": "custom/plugins/${{ inputs.extensionName }}/\(.value)"}) | from_entries' < custom/plugins/${{ inputs.extensionName }}/composer.json)"
         jq -s '.[0] * {"repositories": .[1]} * {"autoload-dev": {"psr-4": .[2]}}' composer.json <(echo '${{ inputs.extraRepositories }}') <(echo "$AUTOLOAD_DEV") > composer.json.new
         mv composer.json.new composer.json
-
-        cat composer.json
 
     - name: Clone Dependencies
       shell: bash
