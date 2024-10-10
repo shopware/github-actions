@@ -2,91 +2,66 @@ name: Jest
 on:
   workflow_call:
     inputs:
-        extensionName:
-          description: 'Your extension name'
-          required: true
-          type: string
-        shopwareVersion:
-          description: |
-            With the default `.auto`, the workflow tries to find a shopware version using the shopware-version action.
+      extensionName:
+        description: "Your extension name"
+        required: true
+        type: string
+      shopwareVersion:
+        description: |
+          With the default `.auto`, the workflow tries to find a shopware version using the shopware-version action.
 
-            For example, if the current ref is next-1234, it will try to find the ref next-1234 in shopware/shopware. If there's no matching ref, it will use shopwareVersionFallback
-          required: false
-          type: string
-          default: '.auto'
-        shopwareVersionFallback:
-          required: false
-          type: string
-          default: trunk
-        uploadCoverage:
-          description: 'Upload coverage to codecov'
-          required: false
-          type: boolean
-          default: false
+          For example, if the current ref is next-1234, it will try to find the ref next-1234 in shopware/shopware. If there's no matching ref, it will use shopwareVersionFallback
+        required: false
+        type: string
+        default: ".auto"
+      shopwareVersionFallback:
+        required: false
+        type: string
+        default: trunk
+      uploadCoverage:
+        description: "Upload coverage to codecov"
+        required: false
+        type: boolean
+        default: false
     secrets:
       codecovToken:
-        description: 'Codecov token'
+        description: "Codecov token"
         required: false
 
-jobs:
-    run:
-        name: Jest
-        runs-on: ubuntu-latest
-        steps:
-            - uses: shopware/github-actions/shopware-version@main
-              with:
-                fallback: ${{ inputs.shopwareVersionFallback }}
-              id: version
-              if: ${{ inputs.shopwareVersion == '.auto' }}
-            - name: Setup Shopware
-              uses: shopware/setup-shopware@main
-              with:
-                shopware-version:  ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
-                php-version: 8.2
-                env: prod
-                install: 'true'
-    
-            - name: Clone Extension
-              uses: actions/checkout@v4
-              with:
-                path: custom/plugins/${{ inputs.extensionName }}
-        
-            - name: Refresh Plugins
-              run: php bin/console plugin:refresh
-        
-            - name: Install Plugin
-              run: php bin/console plugin:install --activate ${{ inputs.extensionName }}
-        
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                node-version: '20.x'
-        
-            - name: Install Administration dependencies
-              working-directory: src/Administration/Resources/app/administration
-              run: npm install --no-audit --no-fund --prefer-offline
-        
-            - name: Prepare Jest environment
-              working-directory: src/Administration/Resources/app/administration
-              run: npm run unit-setup
-        
-            - name: Generate Entity Schema
-              run: php bin/console framework:schema -s 'entity-schema' src/Administration/Resources/app/administration/test/_mocks_/entity-schema.json
-        
-            - name: Install Plugin Dependencies
-              working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
-              run: npm install --no-audit --no-fund --prefer-offline
-        
-            - name: Jest Unit Tests
-              working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
-              run: npm run unit -- --coverage
+env:
+  COMPOSER_ROOT_VERSION: 6.6.9999999-dev
 
-            - name: Upload Coverage
-              if: inputs.uploadCoverage == true
-              uses: codecov/codecov-action@v4
-              env:
-                CODECOV_TOKEN: ${{ secrets.codecovToken }}
-              with:
-                root_dir: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
-                working-directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
-                directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
+jobs:
+  run:
+    name: Jest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Extension
+        uses: shopware/github-actions/setup-extension@main
+        with:
+          extensionName: ${{ github.event.repository.name }}
+          install: true
+          installAdmin: true
+          env: prod
+          extraRepositories: |
+            {
+              "${{ github.event.repository.name }}": {
+                "type": "path",
+                "url": "custom/plugins/${{ github.event.repository.name }}",
+                "symlink": true
+              }
+            }
+
+      - name: Jest Unit Tests
+        working-directory: custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
+        run: npm run unit -- --coverage
+
+      - name: Upload Coverage
+        if: inputs.uploadCoverage == true
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.codecovToken }}
+        with:
+          root_dir: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
+          working-directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
+          directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration
