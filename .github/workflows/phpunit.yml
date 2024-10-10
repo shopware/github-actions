@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       extensionName:
-        description: 'Your extension name'
+        description: "Your extension name"
         required: true
         type: string
       shopwareVersion:
@@ -13,7 +13,7 @@ on:
           For example, if the current ref is next-1234, it will try to find the ref next-1234 in shopware/shopware. If there's no matching ref, it will use shopwareVersionFallback
         required: false
         type: string
-        default: '.auto'
+        default: ".auto"
       shopwareVersionFallback:
         required: false
         type: string
@@ -21,26 +21,30 @@ on:
       phpVersion:
         required: false
         type: string
-        default: '8.2'
+        default: "8.2"
       mysqlVersion:
         required: false
         type: string
-        default: 'builtin'
+        default: "builtin"
       dependencies:
         required: false
         type: string
       uploadCoverage:
-        description: 'Upload coverage to codecov'
+        description: "Upload coverage to codecov"
         required: false
         type: boolean
         default: false
     secrets:
       codecovToken:
-        description: 'Codecov token'
+        description: "Codecov token"
         required: false
       env:
-        description: 'ENV variables to substitute in to plugin repository urls'
+        description: "ENV variables to substitute in to plugin repository urls"
         required: false
+
+env:
+  COMPOSER_ROOT_VERSION: 6.6.9999999-dev
+
 jobs:
   run:
     name: Tests
@@ -67,7 +71,7 @@ jobs:
         env:
           DEPS: ${{ inputs.dependencies }}
         run: |
-          IFS=$'\n' 
+          IFS=$'\n'
           for token in $(echo "${{secrets.env}}"); do
             export $token
           done
