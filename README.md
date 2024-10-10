@@ -2,7 +2,9 @@
 
 ## Workflows
 
-### cs-fixer
+### Code Quality
+
+#### cs-fixer
 
 Installs PHP-CS-Fixer and runs [PER Coding Style 2.0](https://www.php-fig.org/per/coding-style/) through the Plugin.
 
@@ -12,7 +14,7 @@ jobs:
         uses: shopware/github-actions/.github/workflows/cs-fixer.yml@main
 ```
 
-### phpstan
+#### phpstan
 
 Installs PHPStan together with Shopware and the Extension and runs PHPStan
 
@@ -27,7 +29,38 @@ jobs:
           shopwareVersion: 6.5.x
 ```
 
-### PHPUnit
+#### admin-eslint
+
+Runs ESLint on the administration files of the plugin
+```yaml
+jobs:
+    phpstan:
+        uses: shopware/github-actions/.github/workflows/admin-eslint.yml@main
+        with:
+          # Extension name
+          extensionName: MyExtensionName
+          # Run against Shopware version
+          shopwareVersion: 6.5.x
+```
+
+### Testing
+
+#### admin-jest
+
+Runs administration jest tests
+
+```yaml
+jobs:
+    admin-jest:
+        uses: shopware/github-actions/.github/workflows/admin-jest.yml@main
+        with:
+            # Extension Name
+            extensionName: MyExtensionName
+            # Run against Shopware version
+            shopwareVersion: 6.5.x
+```
+
+#### phpunit
 
 ```yaml
 jobs:
