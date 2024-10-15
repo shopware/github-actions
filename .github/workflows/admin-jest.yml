@@ -18,6 +18,10 @@ on:
         required: false
         type: string
         default: trunk
+      composerRootVersion:
+        required: false
+        type: string
+        default: ".auto"
       uploadCoverage:
         description: "Upload coverage to codecov"
         required: false
@@ -28,9 +32,6 @@ on:
         description: "Codecov token"
         required: false
 
-env:
-  COMPOSER_ROOT_VERSION: 6.6.9999999-dev
-
 jobs:
   run:
     name: Jest
@@ -40,6 +41,7 @@ jobs:
         uses: shopware/github-actions/setup-extension@main
         with:
           extensionName: ${{ github.event.repository.name }}
+          composerRootVersion: ${{ inputs.composerRootVersion }}
           install: true
           installAdmin: true
           env: prod

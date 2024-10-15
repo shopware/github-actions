@@ -21,12 +21,15 @@ on:
         required: false
         type: string
         default: trunk
+      composerRootVersion:
+        required: false
+        type: string
+        default: ".auto"
       dependencies:
         required: false
         type: string
 env:
   SHOPWARE_TOOL_CACHE_PHPSTAN: ${{ github.workspace }}/var/phpstan
-  COMPOSER_ROOT_VERSION: 6.6.9999999-dev
 
 jobs:
   run:
@@ -42,6 +45,7 @@ jobs:
         uses: shopware/setup-shopware@main
         with:
           shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+          composer-root-version: ${{ inputs.composerRootVersion }}
           php-version: 8.2
           env: prod
           install: "true"
