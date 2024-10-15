@@ -32,6 +32,10 @@ inputs:
     description: nodejs version to use
     required: false
     default: "20.x"
+  composerRootVersion:
+    description: "The COMPOSER_ROOT_VERSION that should be set"
+    required: false
+    default: ".auto"
 
   dependencies:
     description: JSON list defining dependencies
@@ -89,6 +93,7 @@ runs:
         php-version: ${{ inputs.phpVersion }}
         mysql-version: ${{ inputs.mysqlVersion }}
         node-version: ${{ inputs.node-version }}
+        composer-root-version: ${{ inputs.composerRootVersion }}
         install: ${{ inputs.install }}
         installAdmin: ${{ inputs.installAdmin }}
         installStorefront: ${{ inputs.installStorefront }}

@@ -26,6 +26,10 @@ on:
         required: false
         type: string
         default: "builtin"
+      composerRootVersion:
+        required: false
+        type: string
+        default: ".auto"
       dependencies:
         required: false
         type: string
@@ -41,9 +45,6 @@ on:
       env:
         description: "ENV variables to substitute in to plugin repository urls"
         required: false
-
-env:
-  COMPOSER_ROOT_VERSION: 6.6.9999999-dev
 
 jobs:
   run:
@@ -61,6 +62,7 @@ jobs:
           shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
           php-version: ${{ inputs.phpVersion }}
           mysql-version: ${{ inputs.mysqlVersion }}
+          composer-root-version: ${{ inputs.composerRootVersion }}
           php-extensions: pcov
       - name: Clone Extension
         uses: actions/checkout@v4
