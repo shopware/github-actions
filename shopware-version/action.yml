@@ -15,6 +15,9 @@ outputs:
   shopware-version:
     description: The matching shopware version or fallback
     value: ${{ steps.get-version.outputs.shopware-version }}
+  shopware-major-version:
+    description: The major version of the matching shopware version
+    value: ${{ steps.get-version.outputs.shopware-major-version }}
 
 runs:
   using: "composite"
@@ -44,6 +47,11 @@ runs:
           fi
         fi
 
-        echo "Matching shopware version: $version"
+        echo "Matching shopware version: ${version}"
 
-        echo "shopware-version=$version" >> "$GITHUB_OUTPUT"
+        major_version=$(echo "$version" | cut -d '.' -f 2)
+        
+        echo "Major version: ${major_version}"
+        
+        echo "shopware-version=${version}" >> "$GITHUB_OUTPUT"
+        echo "shopware-major-version=${major_version}" >> "$GITHUB_OUTPUT"
