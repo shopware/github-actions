@@ -42,7 +42,8 @@ runs:
       with:
         fallback: ${{ inputs.shopwareVersionFallback }}
       id: version
-      if: ${{ inputs.shopwareVersion == '.auto' }}
+      if: ${{ inputs.shopwareVersion == '' }}
+
     - name: Clone Shopware
       uses: actions/checkout@v4
       with:

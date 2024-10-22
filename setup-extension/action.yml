@@ -85,7 +85,8 @@ runs:
       with:
         fallback: ${{ inputs.shopwareVersionFallback }}
       id: version
-      if: ${{ inputs.shopwareVersion == '.auto' }}
+      if: ${{ inputs.shopwareVersion == '' }}
+
     - name: Setup Shopware
       uses: shopware/setup-shopware@main
       with:
