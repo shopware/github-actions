@@ -43,7 +43,7 @@ jobs:
           extensionName: ${{ github.event.repository.name }}
           composerRootVersion: ${{ inputs.composerRootVersion }}
           install: true
-          installAdmin: true
+          install-admin: true
           env: prod
           extraRepositories: |
             {

@@ -58,12 +58,12 @@ inputs:
     required: false
     default: ""
 
-  installAdmin:
+  install-admin:
     description: Whether to install administration npm dependencies
     required: false
     default: ""
 
-  installStorefront:
+  install-storefront:
     description: Whether to install storefront npm dependencies
     required: false
     default: ""
@@ -95,8 +95,8 @@ runs:
         node-version: ${{ inputs.node-version }}
         composer-root-version: ${{ inputs.composerRootVersion }}
         install: ${{ inputs.install }}
-        installAdmin: ${{ inputs.installAdmin }}
-        installStorefront: ${{ inputs.installStorefront }}
+        install-admin: ${{ inputs.install-admin }}
+        install-storefront: ${{ inputs.install-storefront }}
         keep-composer-tools: ${{ inputs.keep-composer-tools }}
         env: ${{ inputs.env }}
         php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov, zip
@@ -178,7 +178,7 @@ runs:
 
     # TODO: install deps for all bundles (bin/ci bundle:dump -> foreach bundle in var/plugins.json)
     - name: Install extension admin deps
-      if: ${{ inputs.installAdmin }}
+      if: ${{ inputs.install-admin }}
       shell: bash
       run: |
         if [[ -r "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration/package.json" ]]; then
@@ -186,14 +186,14 @@ runs:
         fi
 
     - name: Install storefront deps
-      if: ${{ inputs.installStorefront }}
+      if: ${{ inputs.install-storefront }}
       shell: bash
       working-directory: src/Storefront/Resources/app/storefront
       run: npm ci --no-audit --no-fund --prefer-offline
 
     # TODO: install deps for all bundles
     - name: Install extension storefront deps
-      if: ${{ inputs.installStorefront }}
+      if: ${{ inputs.install-storefront }}
       shell: bash
       run: |
         if [[ -r "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/storefront/package.json" ]]; then
@@ -201,12 +201,12 @@ runs:
         fi
 
     - name: Prepare Jest environment
-      if: ${{ inputs.install && inputs.installAdmin }}
+      if: ${{ inputs.install && inputs.install-admin }}
       shell: bash
       working-directory: src/Administration/Resources/app/administration
       run: npm run unit-setup
 
     - name: Entity schema
-      if: ${{ inputs.install && inputs.installAdmin }}
+      if: ${{ inputs.install && inputs.install-admin }}
       shell: bash
       run: composer admin:generate-entity-schema-types
