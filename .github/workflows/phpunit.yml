@@ -89,7 +89,7 @@ jobs:
         run: ${{ github.workspace }}/vendor/bin/phpunit --coverage-clover clover.xml
       - name: Upload Coverage
         if: inputs.uploadCoverage == true
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.codecovToken }}
         with:
