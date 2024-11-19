@@ -30,8 +30,8 @@ runs:
           ${{ runner.OS }}-${{ github.repository }}-phpstan-
     - name: Build PHPStan Bootstrap
       shell: bash
-      run: php ${{ github.workspace }}/src/Core/DevOps/StaticAnalyze/phpstan-bootstrap.php
+      run: php ${GITHUB_WORKSPACE}/src/Core/DevOps/StaticAnalyze/phpstan-bootstrap.php
     - name: Run PHPStan
       shell: bash
       working-directory: custom/plugins/${{ inputs.extensionName }}
-      run: ${{ github.workspace }}/vendor/bin/phpstan analyze --error-format=github --no-progress
+      run: ${GITHUB_WORKSPACE}/vendor/bin/phpstan analyze --error-format=github --no-progress
