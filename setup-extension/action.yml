@@ -209,7 +209,7 @@ runs:
       if: ${{ inputs.install && inputs.install-admin }}
       shell: bash
       working-directory: src/Administration/Resources/app/administration
-      run: npm run unit-setup
+      run: npm run unit-setup --if-present
 
     - name: Entity schema
       if: ${{ inputs.install && inputs.install-admin }}
