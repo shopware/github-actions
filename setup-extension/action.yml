@@ -32,6 +32,10 @@ inputs:
     description: nodejs version to use
     required: false
     default: "20.x"
+  npm-version:
+    description: npm version to use
+    required: false
+    default: ""
   composerRootVersion:
     description: "The COMPOSER_ROOT_VERSION that should be set"
     required: false
@@ -93,6 +97,7 @@ runs:
         php-version: ${{ inputs.phpVersion }}
         mysql-version: ${{ inputs.mysqlVersion }}
         node-version: ${{ inputs.node-version }}
+        npm-version: ${{ inputs.npm-version }}
         composer-root-version: ${{ inputs.composerRootVersion }}
         install: ${{ inputs.install }}
         install-admin: ${{ inputs.install-admin }}
@@ -204,7 +209,7 @@ runs:
       if: ${{ inputs.install && inputs.install-admin }}
       shell: bash
       working-directory: src/Administration/Resources/app/administration
-      run: npm run unit-setup
+      run: npm run unit-setup --if-present
 
     - name: Entity schema
       if: ${{ inputs.install && inputs.install-admin }}
