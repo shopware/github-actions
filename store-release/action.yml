@@ -1,0 +1,87 @@
+name: "Release Extension to Store"
+description: "Builds the extension and uploads a zip of it to the Shopware Store"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  extensionName:
+    description: "Your extension name"
+    required: true
+  publishOnly:
+    description: "Publish only to Shopware Store and dont create a tag"
+    required: false
+    default: 'false'
+  path:
+    description: "Path to your bundle"
+    required: false
+    default: "."
+  accountUser:
+    description: "Your Shopware account user"
+    required: true
+  accountPassword:
+    description: "Your Shopware account password"
+    required: true
+  ghToken:
+    description: "GitHub token"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: shopware/build-zip@main
+      with:
+        extensionName: ${{ inputs.extensionName }}
+
+    - name: Get version
+      shell: bash
+      run: |
+        echo "EXTENSION_VERSION=$(shopware-cli extension get-version .)" >> $GITHUB_ENV
+    - name: Check Tag existence
+      uses: mukunku/tag-exists-action@v1.6.0
+      id: checkTag
+      with:
+        tag: ${{ env.EXTENSION_VERSION }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.ghToken }}
+    - name: Validate Zip
+      shell: bash
+      run: shopware-cli extension validate $(pwd)/${{ inputs.extensionName }}.zip
+    - name: Store Upload
+      shell: bash
+      run: shopware-cli account producer extension upload $(pwd)/${{ inputs.extensionName }}.zip
+      env:
+        GITHUB_TOKEN: ${{ inputs.ghToken }}
+        SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ inputs.accountUser }}
+        SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ inputs.accountPassword }}
+    - name: Extract Changelog
+      shell: bash
+      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
+      run: shopware-cli extension get-changelog $(pwd)/${{ inputs.extensionName }}.zip > /tmp/changelog.txt
+    - name: Unzip
+      shell: bash
+      if: inputs.publishOnly == false
+      run: |
+        unzip -o -q "${{ inputs.extensionName }}.zip" -d /tmp/toDeploy
+        mv "${{ inputs.extensionName }}.zip" /tmp/
+        rsync -av --exclude '.git' --delete /tmp/toDeploy/${{ inputs.extensionName }}/ .
+        rm -rf ./vendor
+    - name: Commit
+      shell: bash
+      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+        git add -f .
+        git commit -m "Build release"
+        git tag ${EXTENSION_VERSION}
+        git push origin ${EXTENSION_VERSION}
+    - name: Create a GitHub release
+      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: /tmp/${{ inputs.extensionName }}.zip
+        tag: ${{ env.EXTENSION_VERSION }}
+        name: ${{ env.EXTENSION_VERSION }}
+        bodyFile: /tmp/changelog.txt
