@@ -55,7 +55,14 @@ inputs:
             "url": "https://my-custom-repo.example.test/foo/bar.git"
           }
         }
-    default: "{}"
+    default: |
+      {
+        "${{ github.event.repository.name }}": {
+          "type": "path",
+          "url": "custom/plugins/${{ github.event.repository.name }}",
+          "symlink": true
+        }
+      }
 
   install:
     description: Whether to install Shopware or not
@@ -90,6 +97,7 @@ runs:
         fallback: ${{ inputs.shopwareVersionFallback }}
       id: version
       if: ${{ inputs.shopwareVersion == '.auto' }}
+
     - name: Setup Shopware
       uses: shopware/setup-shopware@add-runs-on-cache-option
       with:
