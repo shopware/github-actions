@@ -13,6 +13,10 @@ inputs:
     description: "Path to your bundle"
     required: false
     default: "."
+  skipCheckout:
+    description: "Skip the checkout step"
+    required: false
+    default: 'false'
 
 outputs:
   artifact-id:
@@ -26,6 +30,7 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v4
+      if: inputs.skipCheckout == 'false'
     - name: Install shopware-cli
       uses: FriendsOfShopware/shopware-cli-action@v1
     - name: Build
