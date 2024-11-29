@@ -57,11 +57,11 @@ runs:
         SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ inputs.accountPassword }}
     - name: Extract Changelog
       shell: bash
-      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
+      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == 'false'
       run: shopware-cli extension get-changelog $(pwd)/${{ inputs.extensionName }}.zip > /tmp/changelog.txt
     - name: Unzip
       shell: bash
-      if: inputs.publishOnly == false
+      if: inputs.publishOnly == 'false'
       run: |
         unzip -o -q "${{ inputs.extensionName }}.zip" -d /tmp/toDeploy
         mv "${{ inputs.extensionName }}.zip" /tmp/
@@ -69,7 +69,7 @@ runs:
         rm -rf ./vendor
     - name: Commit
       shell: bash
-      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
+      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == 'false'
       run: |
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
@@ -78,7 +78,7 @@ runs:
         git tag ${EXTENSION_VERSION}
         git push origin ${EXTENSION_VERSION}
     - name: Create a GitHub release
-      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
+      if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == 'false'
       uses: ncipollo/release-action@v1
       with:
         artifacts: /tmp/${{ inputs.extensionName }}.zip
