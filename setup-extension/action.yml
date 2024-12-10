@@ -111,7 +111,24 @@ runs:
       with:
         path: custom/plugins/${{ inputs.extensionName }}
 
+    - name: Determine whether we are dealing with a plugin or an app
+      shell: bash
+      env:
+        IS_PLUGIN: ${{ hashFiles(format('custom/plugins/{0}/composer.json', inputs.extensionName)) != '' }}
+        IS_APP: ${{ hashFiles(format('custom/plugins/{0}/manifest.xml', inputs.extensionName)) != '' }}
+      run: |-
+        echo "IS_PLUGIN=${IS_PLUGIN}" >> $GITHUB_ENV
+        echo "IS_APP=${IS_APP}" >> $GITHUB_ENV
+
+    - name: Move if the extension is an app
+      if: ${{ env.IS_APP == 'true' }}
+      shell: bash
+      run: |
+        mkdir -p custom/apps
+        mv custom/plugins/${{ inputs.extensionName }} custom/apps/${{ inputs.extensionName }}
+
     - name: Make composer config adjustments
+      if: ${{ env.IS_PLUGIN == 'true' }}
       shell: bash
       run: |
         composer config prefer-stable true
@@ -144,7 +161,7 @@ runs:
         done
 
     - name: Install dependencies with Composer
-      if: inputs.dependencies
+      if: ${{ inputs.dependencies && env.IS_PLUGIN == 'true' }}
       env:
         DEPS: ${{ inputs.dependencies }}
       shell: bash
@@ -156,16 +173,17 @@ runs:
         done
 
     - name: Install extension with Composer
+      if: ${{ env.IS_PLUGIN == 'true' }}
       shell: bash
       run: composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name)
 
     - name: Refresh Plugins
-      if: ${{ inputs.install }}
+      if: ${{ inputs.install && env.IS_PLUGIN == 'true' }}
       shell: bash
       run: php bin/console plugin:refresh
 
     - name: Install extension dependencies
-      if: ${{ inputs.install && inputs.dependencies }}
+      if: ${{ inputs.install && inputs.dependencies && env.IS_PLUGIN == 'true' }}
       shell: bash
       env:
         DEPS: ${{ inputs.dependencies }}
@@ -177,7 +195,7 @@ runs:
         done
 
     - name: Install Plugin
-      if: ${{ inputs.install }}
+      if: ${{ inputs.install && env.IS_PLUGIN == 'true' }}
       shell: bash
       run: php bin/console plugin:install --activate ${{ inputs.extensionName }}
 
@@ -189,6 +207,12 @@ runs:
         if [[ -r "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration/package.json" ]]; then
           (cd "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration/" && npm ci --no-audit --no-fund --prefer-offline)
         fi
+
+    - name: Install app
+      if: ${{ inputs.install && env.IS_APP == 'true' }}
+      shell: bash
+      run: |-
+        bin/console app:refresh -n ${{ inputs.extensionName }}
 
     - name: Install storefront deps
       if: ${{ inputs.install-storefront }}
