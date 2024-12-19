@@ -25,6 +25,7 @@ jobs:
       - name: Setup and Install Theme
         uses: shopware/github-actions/setup-extension@main
         with:
+          shopwareVersion: 'trunk'
           mysqlVersion: 'skip'
           install: 'true'
           install-admin: 'true'
