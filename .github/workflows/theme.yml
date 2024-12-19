@@ -1,0 +1,77 @@
+name: Theme
+on:
+  workflow_call:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build and validate Theme
+    runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: shopware
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+        volumes:
+          - /dev/shm/mysql:/var/lib/mysql
+    steps:
+      - name: Setup and Install Theme
+        uses: shopware/github-actions/setup-extension@main
+        with:
+          mysqlVersion: 'skip'
+          install: 'true'
+          install-admin: 'true'
+          install-storefront: 'true'
+          env: 'prod'
+          extensionName: '${{ github.event.repository.name }}'
+
+      - name: Validate Snippets
+        run: |-
+          bin/console snippets:validate
+
+      - name: Build Theme
+        uses: shopware/github-actions/build-zip@main
+        env:
+          NODE_OPTIONS: "--openssl-legacy-provider"
+        with:
+          path: 'custom/apps/${{ github.event.repository.name }}'
+          extensionName: '${{ github.event.repository.name }}'
+
+  should_test_jest:
+    name: Determine whether to run Jest tests
+    runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    outputs:
+      test_jest: ${{ steps.should_run.outputs.test_jest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine whether to run Jest tests
+        id: should_run
+        run: |-
+          echo "test_jest=${{ hashFiles('Resources/app/storefront/package-lock.json') != '' && hashFiles('Resources/app/storefront/jest.config.*') != '' }}" >> ${GITHUB_OUTPUT}
+
+  test_jest:
+    name: Unit tests (Jest)
+    runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    needs:
+      - should_test_jest
+    if: ${{ needs.should_test_jest.outputs.test_jest == 'true' }}
+    env:
+      STOREFRONT_PATH: "Resources/app/storefront"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Execute Jest tests
+        working-directory: ${{ env.STOREFRONT_PATH }}
+        run: |-
+          npm ci --no-audit --prefer-offline
+          
+          # shellcheck disable=SC2046
+          $(npm bin)/jest --config jest.config.js --ci
