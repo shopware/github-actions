@@ -8,8 +8,23 @@ defaults:
 
 jobs:
   build:
-    name: Build and validate Theme
+    name: Build Theme
     runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Theme
+        uses: shopware/github-actions/build-zip@main
+        env:
+          NODE_OPTIONS: "--openssl-legacy-provider"
+        with:
+          extensionName: '${{ github.event.repository.name }}'
+
+  install:
+    name: Test Theme installation
+    runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    needs:
+      - build
     services:
       mysql:
         image: mysql:8.0
@@ -27,22 +42,13 @@ jobs:
         with:
           mysqlVersion: 'skip'
           install: 'true'
-          install-admin: 'true'
-          install-storefront: 'true'
           env: 'prod'
           extensionName: '${{ github.event.repository.name }}'
+          extension-zip: '${{ github.event.repository.name }}.zip'
 
       - name: Validate Snippets
         run: |-
           bin/console snippets:validate
-
-      - name: Build Theme
-        uses: shopware/github-actions/build-zip@main
-        env:
-          NODE_OPTIONS: "--openssl-legacy-provider"
-        with:
-          path: 'custom/apps/${{ github.event.repository.name }}'
-          extensionName: '${{ github.event.repository.name }}'
 
   should_test_jest:
     name: Determine whether to run Jest tests

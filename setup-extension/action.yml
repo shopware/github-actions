@@ -82,6 +82,10 @@ inputs:
     required: false
     default: "false"
 
+  extension-zip:
+    description: "Artifact (extension zip archive) to download; Setting this will prevent a checkout of the extension and download the referenced archive instead"
+    required: false
+
 runs:
   using: "composite"
   steps:
@@ -90,6 +94,7 @@ runs:
         fallback: ${{ inputs.shopwareVersionFallback }}
       id: version
       if: ${{ inputs.shopwareVersion == '.auto' }}
+
     - name: Setup Shopware
       uses: shopware/setup-shopware@main
       with:
@@ -104,12 +109,26 @@ runs:
         install-storefront: ${{ inputs.install-storefront }}
         keep-composer-tools: ${{ inputs.keep-composer-tools }}
         env: ${{ inputs.env }}
-        php-extensions: gd, xml, dom, curl, pdo, mysqli, mbstring, pdo_mysql, bcmath, pcov, zip
 
     - name: Clone Extension
+      if: ${{ ! inputs.extension-zip }}
       uses: actions/checkout@v4
       with:
         path: custom/plugins/${{ inputs.extensionName }}
+
+    - name: Download extension zip
+      if: ${{ inputs.extension-zip }}
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.extension-zip }}
+        path: custom/plugins/${{ inputs.extensionName }}
+
+    - name: Extract extension zip if needed
+      if: ${{ inputs.extension-zip }}
+      shell: bash
+      run: |
+        unzip -o "custom/plugins/${{ inputs.extensionName }}/*.zip" "${{ inputs.extensionName }}/*" -d "custom/plugins/"
+        rm -f "custom/plugins/${{ inputs.extensionName }}/*.zip"
 
     - name: Determine whether we are dealing with a plugin or an app
       shell: bash
@@ -119,6 +138,12 @@ runs:
       run: |-
         echo "IS_PLUGIN=${IS_PLUGIN}" >> $GITHUB_ENV
         echo "IS_APP=${IS_APP}" >> $GITHUB_ENV
+        
+        if [ "${IS_PLUGIN}" == "false" ] && [ "${IS_APP}" == "false" ]; then
+          ls -lah custom/plugins/${{ inputs.extensionName }}
+          echo "Neither a plugin nor an app found at custom/plugins/${{ inputs.extensionName }}. Exiting."
+          exit 1
+        fi
 
     - name: Move if the extension is an app
       if: ${{ env.IS_APP == 'true' }}
