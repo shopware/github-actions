@@ -9,7 +9,7 @@ defaults:
 jobs:
   build:
     name: Build Theme
-    runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    runs-on: ${{ (github.event.act || !github.event.repository.private) && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -22,7 +22,7 @@ jobs:
 
   install:
     name: Test Theme installation
-    runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    runs-on: ${{ (github.event.act || !github.event.repository.private) && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
     needs:
       - build
     services:
@@ -52,7 +52,7 @@ jobs:
 
   should_test_jest:
     name: Determine whether to run Jest tests
-    runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    runs-on: ${{ (github.event.act || !github.event.repository.private) && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
     outputs:
       test_jest: ${{ steps.should_run.outputs.test_jest }}
     steps:
@@ -65,7 +65,7 @@ jobs:
 
   test_jest:
     name: Unit tests (Jest)
-    runs-on: ${{ github.event.act && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
+    runs-on: ${{ (github.event.act || !github.event.repository.private) && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
     needs:
       - should_test_jest
     if: ${{ needs.should_test_jest.outputs.test_jest == 'true' }}
