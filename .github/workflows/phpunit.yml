@@ -57,7 +57,7 @@ jobs:
         id: version
         if: ${{ inputs.shopwareVersion == '.auto' }}
       - name: Setup Shopware
-        uses: shopware/setup-shopware@main
+        uses: shopware/setup-shopware@add-extensions-cache
         with:
           shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
           php-version: ${{ inputs.phpVersion }}
