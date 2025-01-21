@@ -26,6 +26,10 @@ inputs:
   ghToken:
     description: "GitHub token"
     required: true
+  skipCheckout:
+    description: "Skip the checkout step"
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
@@ -33,6 +37,7 @@ runs:
     - uses: shopware/build-zip@main
       with:
         extensionName: ${{ inputs.extensionName }}
+        skipCheckout: ${{ inputs.skipCheckout }}
 
     - name: Get version
       shell: bash
