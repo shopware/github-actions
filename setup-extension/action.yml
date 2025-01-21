@@ -99,7 +99,7 @@ runs:
       if: ${{ inputs.shopwareVersion == '.auto' }}
 
     - name: Setup Shopware
-      uses: shopware/setup-shopware@main
+      uses: shopware/setup-shopware@use-forked-setup-php
       with:
         shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
         php-version: ${{ inputs.phpVersion }}
@@ -142,7 +142,7 @@ runs:
       run: |-
         echo "IS_PLUGIN=${IS_PLUGIN}" >> $GITHUB_ENV
         echo "IS_APP=${IS_APP}" >> $GITHUB_ENV
-        
+
         if [ "${IS_PLUGIN}" == "false" ] && [ "${IS_APP}" == "false" ]; then
           ls -lah custom/plugins/${{ inputs.extensionName }}
           echo "Neither a plugin nor an app found at custom/plugins/${{ inputs.extensionName }}. Exiting."

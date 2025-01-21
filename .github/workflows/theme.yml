@@ -38,7 +38,7 @@ jobs:
           - /dev/shm/mysql:/var/lib/mysql
     steps:
       - name: Setup and Install Theme
-        uses: shopware/github-actions/setup-extension@main
+        uses: shopware/github-actions/setup-extension@use-forked-setup-php
         with:
           mysqlVersion: 'skip'
           install: 'true'

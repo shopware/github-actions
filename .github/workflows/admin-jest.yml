@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Extension
-        uses: shopware/github-actions/setup-extension@main
+        uses: shopware/github-actions/setup-extension@use-forked-setup-php
         with:
           extensionName: ${{ github.event.repository.name }}
           composerRootVersion: ${{ inputs.composerRootVersion }}
