@@ -96,7 +96,7 @@ runs:
       with:
         fallback: ${{ inputs.shopwareVersionFallback }}
       id: version
-      if: ${{ inputs.shopwareVersion == '.auto' }}
+      if: ${{ inputs.shopwareVersion == '.auto' || inputs.shopwareVersion == '' }}
 
     - name: Setup Shopware
       uses: shopware/setup-shopware@main
@@ -142,7 +142,7 @@ runs:
       run: |-
         echo "IS_PLUGIN=${IS_PLUGIN}" >> $GITHUB_ENV
         echo "IS_APP=${IS_APP}" >> $GITHUB_ENV
-        
+
         if [ "${IS_PLUGIN}" == "false" ] && [ "${IS_APP}" == "false" ]; then
           ls -lah custom/plugins/${{ inputs.extensionName }}
           echo "Neither a plugin nor an app found at custom/plugins/${{ inputs.extensionName }}. Exiting."
