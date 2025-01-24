@@ -40,7 +40,7 @@ runs:
             version="${remote_ref#"refs/heads/"}"
           else
             echo "No matching branch found, using fallback"
-            version="${{ inputs.fallback || "trunk" }}"
+            version="${{ inputs.fallback }}"
           fi
         fi
 
