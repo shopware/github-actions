@@ -67,6 +67,7 @@ runs:
     - uses: shopware/github-actions/shopware-version@main
       with:
         fallback: ${{ inputs.refFallback }}
+        repo: ${{ inputs.repo }}
       id: version
       if: ${{ inputs.ref == '.auto' }}
 
