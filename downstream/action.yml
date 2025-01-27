@@ -13,9 +13,13 @@ inputs:
     description: "Workflow to dispatch in downstream"
     required: true
   ref:
-    description: "Downstream ref"
+    description: "Downstream ref, automatically detects matching refs with .auto"
     required: false
-    default: "main"
+    default: ".auto"
+  refFallback:
+    description: Fallback ref in case there's no matching branch. Only used in .auto mode
+    required: false
+    default: trunk
   env:
     description: |
       Environment variables to pass to the downstream workflow
@@ -59,11 +63,13 @@ runs:
       with:
         scope: ${{ inputs.repo }}
         identity: ${{ inputs.identity }}
-    - name: List workflows test
-      shell: bash
-      env:
-        GH_TOKEN: ${{ inputs.token || steps.sts.outputs.token }}
-      run: gh workflow list --repo "${{ inputs.repo }}"
+
+    - uses: shopware/github-actions/shopware-version@main
+      with:
+        fallback: ${{ inputs.refFallback }}
+      id: version
+      if: ${{ inputs.ref == '.auto' }}
+
     - name: Trigger Downstream
       shell: bash
       env:
@@ -80,7 +86,7 @@ runs:
           }
         WORKFLOW: ${{ inputs.workflow }}
         REPO: ${{ inputs.repo }}
-        REF: ${{ inputs.ref }}
+        REF: ${{ steps.version.outputs.shopware-version || inputs.ref }}
       run: gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF" -f upstream_data="$UPSTREAM_DATA"
     - name: Wait for conclusion
       shell: bash

@@ -10,6 +10,10 @@ inputs:
     description: The fallback that is returned if there's no matching branch
     default: trunk
     required: false
+  repo:
+    description: The repo where to look for matching refs
+    default: shopware/shopware
+    required: false
 
 outputs:
   shopware-version:
@@ -31,11 +35,11 @@ runs:
 
         echo "Local ref: $ref"
 
-        remote_ref=$(git ls-remote --heads "https://github.com/shopware/shopware" "$ref" | cut -f 2)
+        remote_ref=$(git ls-remote --heads "https://github.com/${{ inputs.repo }}" "$ref" | cut -f 2)
         if [[ -n "$remote_ref" ]]; then
           version="${remote_ref#"refs/heads/"}"
         else
-          remote_ref=$(git ls-remote --heads "https://github.com/shopware/shopware" refs/heads/${{ github.base_ref }} | cut -f 2)
+          remote_ref=$(git ls-remote --heads "https://github.com/${{ inputs.repo }}" refs/heads/${{ github.base_ref }} | cut -f 2)
           if [[ -n "$remote_ref" ]]; then
             version="${remote_ref#"refs/heads/"}"
           else
