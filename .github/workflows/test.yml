@@ -1,0 +1,26 @@
+name: Test actions
+on:
+  pull_request:
+
+jobs:
+    shopware-version:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - id: version
+              uses: ./shopware-version
+              with:
+                fallback: ""
+            - name: Check shopware-version is never empty 
+              run: |
+                SHOPWARE_VERSION="${{ steps.version.outputs.shopware-version }}"
+                echo "shopware-version: '${SHOPWARE_VERSION}'"
+                if [[ -z "${SHOPWARE_VERSION}" ]]; then
+                    echo 'shopware-version should not be empty'
+                    exit 1
+                fi
+
+                
+
+
