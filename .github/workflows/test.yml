@@ -1,0 +1,21 @@
+name: Test actions
+on:
+  pull_request:
+
+jobs:
+    shopware-version:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - id: version
+              uses: ./setup-version
+              with:
+                fallback: fallback-value
+            - name: Check shopware-version is never empty 
+              run: |
+                [[ -n "${{ steps.version.outputs.shopware-version }}" ]]
+
+                
+
+
