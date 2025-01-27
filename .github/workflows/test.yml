@@ -14,7 +14,7 @@ jobs:
                 fallback: ""
             - name: Check shopware-version is never empty 
               run: |
-                SHOPWARE_VERSION="${{ steps.version.outputs.shopware-version-test }}"
+                SHOPWARE_VERSION="${{ steps.version.outputs.shopware-version }}"
                 echo "shopware-version: '${SHOPWARE_VERSION}'"
                 if [[ -z "${SHOPWARE_VERSION}" ]]; then
                     echo 'shopware-version should not be empty'
