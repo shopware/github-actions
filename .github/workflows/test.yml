@@ -9,7 +9,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
             - id: version
-              uses: ./setup-version
+              uses: ./shopware-version
               with:
                 fallback: fallback-value
             - name: Check shopware-version is never empty 
