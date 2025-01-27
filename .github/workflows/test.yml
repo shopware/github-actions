@@ -16,7 +16,7 @@ jobs:
               run: |
                 SHOPWARE_VERSION="${{ steps.version.outputs.shopware-version-test }}"
                 echo "shopware-version: '${SHOPWARE_VERSION}'"
-                if [[ -n "${SHOPWARE_VERSION}" ]]; then
+                if [[ -z "${SHOPWARE_VERSION}" ]]; then
                     echo 'shopware-version should not be empty'
                     exit 1
                 fi
