@@ -11,10 +11,10 @@ jobs:
             - id: version
               uses: ./shopware-version
               with:
-                fallback: fallback-value
+                fallback: ""
             - name: Check shopware-version is never empty 
               run: |
-                [[ -n "${{ steps.version.outputs.shopware-version }}" ]]
+                [[ -n "${{ steps.version.outputs.shopware-versionasdf }}" ]]
 
                 
 
