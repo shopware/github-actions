@@ -9,6 +9,9 @@ inputs:
   repo:
     description: "Downstream repo"
     required: true
+  token-scope:
+    description: "Scrope for the sts token"
+    required: false
   workflow:
     description: "Workflow to dispatch in downstream"
     required: true
@@ -61,8 +64,12 @@ runs:
       if: ${{ ! inputs.token }}
       id: sts
       with:
-        scope: ${{ inputs.repo }}
+        scope: ${{ inputs.token-scope || inputs.repo }}
         identity: ${{ inputs.identity }}
+
+    - shell: bash
+      run: |
+        git config "http.https://github.com/".extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${{ steps.sts.outputs.token }}" | base64 -w0)"
 
     - uses: shopware/github-actions/shopware-version@main
       with:
