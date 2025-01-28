@@ -64,6 +64,10 @@ runs:
         scope: ${{ inputs.repo }}
         identity: ${{ inputs.identity }}
 
+    - shell: bash
+      run: |
+        git config "http.https://github.com/".extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${{ steps.sts.outputs.token }}" | base64)"
+
     - uses: shopware/github-actions/shopware-version@main
       with:
         fallback: ${{ inputs.refFallback }}
