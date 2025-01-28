@@ -9,6 +9,9 @@ inputs:
   repo:
     description: "Downstream repo"
     required: true
+  token-scope:
+    description: "Scrope for the sts token"
+    required: false
   workflow:
     description: "Workflow to dispatch in downstream"
     required: true
@@ -61,7 +64,7 @@ runs:
       if: ${{ ! inputs.token }}
       id: sts
       with:
-        scope: ${{ inputs.repo }}
+        scope: ${{ inputs.token-scope || inputs.repo }}
         identity: ${{ inputs.identity }}
 
     - shell: bash
