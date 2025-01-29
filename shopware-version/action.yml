@@ -26,28 +26,10 @@ runs:
     - name: Get shopware version
       id: get-version
       shell: bash
-      run: |
-        if [[ -n "${{ github.head_ref }}" ]]; then
-          ref="refs/heads/${{ github.head_ref }}"
-        else
-          ref="${{ github.ref }}"
-        fi
-
-        echo "Local ref: $ref"
-
-        remote_ref=$(git ls-remote --heads "https://github.com/${{ inputs.repo }}" "$ref" | cut -f 2)
-        if [[ -n "$remote_ref" ]]; then
-          version="${remote_ref#"refs/heads/"}"
-        else
-          remote_ref=$(git ls-remote --heads "https://github.com/${{ inputs.repo }}" refs/heads/${{ github.base_ref }} | cut -f 2)
-          if [[ -n "$remote_ref" ]]; then
-            version="${remote_ref#"refs/heads/"}"
-          else
-            echo "No matching branch found, using fallback"
-            version="${{ inputs.fallback || 'trunk' }}"
-          fi
-        fi
-
-        echo "Matching shopware version: $version"
-
-        echo "shopware-version=$version" >> "$GITHUB_OUTPUT"
+      env:
+        REF: "${{ github.ref }}"
+        BASE_REF: "${{ github.base_ref }}"
+        HEAD_REF: "${{ github.head_ref }}"
+        REPO: "${{ inputs.repo }}"
+        FALLBACK: "${{ inputs.fallback || 'trunk' }}"
+      run: ${GITHUB_ACTION_PATH}/shopware-version.bash
