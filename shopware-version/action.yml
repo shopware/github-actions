@@ -31,5 +31,6 @@ runs:
         BASE_REF: "${{ github.base_ref }}"
         HEAD_REF: "${{ github.head_ref }}"
         REPO: "${{ inputs.repo }}"
+        CURRENT_REPO: "${{ github.repository }}"
         FALLBACK: "${{ inputs.fallback || 'trunk' }}"
       run: ${GITHUB_ACTION_PATH}/shopware-version.bash
