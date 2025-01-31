@@ -46,6 +46,9 @@ inputs:
     description: Timeout for the downstream
     required: false
     default: "30m"
+  poll_interval:
+    description: Poll interval for checking the status. By default 2 minutes
+    default: "2m"
 
 outputs:
   run_id:
@@ -105,4 +108,4 @@ runs:
         GH_TOKEN: ${{ inputs.token || steps.sts.outputs.token }}
         WORKFLOW: ${{ inputs.workflow }}
         REPO: ${{ inputs.repo }}
-      run: timeout "${{ inputs.timeout }}" ${GITHUB_ACTION_PATH}/wait.bash "$REPO" "$WORKFLOW" "${{ github.run_id }}"
+      run: timeout "${{ inputs.timeout }}" ${GITHUB_ACTION_PATH}/wait.bash "$REPO" "$WORKFLOW" "${{ github.run_id }}" "${{ inputs.poll_interval }}"
