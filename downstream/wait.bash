@@ -2,6 +2,7 @@
 REPO=${1}
 WORKFLOW=${2}
 RUN_ID=${3}
+POLL_INTERVAL=${4}
 
 FILTER_DATE=$(TZ=UTC date -d "-5 minutes" "+%Y-%m-%dT%H:%M")
 MAX_ATTEMPTS=10
@@ -56,7 +57,7 @@ while true; do
         fi
     done
 
-    sleep 10
+    sleep ${POLL_INTERVAL}
 done
 
 url=https://github.com/${REPO}/actions/runs/${DOWNSTREAM_RUN_ID}
