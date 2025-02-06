@@ -20,7 +20,9 @@ echo "Local ref: ${ref}"
 PR_NR=$(echo "${ref}" | sed -E -n "s|^refs/heads/gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\1|p")
 if [[ -n "${PR_NR}" ]]; then
     echo "Found merge queue ref with PR Nr. ${PR_NR}" 2>&1
+
     ref="refs/heads/$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}"  --jq '.headRefName' --json headRefName)"
+    BASE_REF="$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}"  --jq '.baseRefName' --json baseRefName)"
 fi
 
 remote_ref=$(git ls-remote --heads "https://github.com/${REPO}" "${ref}" | cut -f 2)
