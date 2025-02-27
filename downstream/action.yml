@@ -72,7 +72,7 @@ runs:
 
     - shell: bash
       run: |
-        git config "http.https://github.com/".extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${{ steps.sts.outputs.token }}" | base64 -w0)"
+        git config "http.https://github.com/".extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${{ inputs.token || steps.sts.outputs.token }}" | base64 -w0)"
 
     - uses: shopware/github-actions/shopware-version@main
       env:
