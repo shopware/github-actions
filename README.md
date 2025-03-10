@@ -1,4 +1,4 @@
-# Reusable GitHub Actions and Workflows for Shopware Extensions
+# Reusable GitHub Actions and Workflows for Shopware extensions
 
 ## Workflows
 
@@ -6,7 +6,7 @@
 
 #### cs-fixer
 
-Installs PHP-CS-Fixer and runs [PER Coding Style 2.0](https://www.php-fig.org/per/coding-style/) through the Plugin.
+Installs PHP-CS-Fixer and runs [PER Coding Style 2.0](https://www.php-fig.org/per/coding-style/) through the plugin.
 
 ```yaml
 jobs:
@@ -16,7 +16,7 @@ jobs:
 
 #### phpstan
 
-Installs PHPStan together with Shopware and the Extension and runs PHPStan
+Installs Shopware 6, PHPStan and the extension, then runs PHPStan
 
 ```yaml
 jobs:
@@ -27,6 +27,18 @@ jobs:
           extensionName: MyExtensionName
           # Run against Shopware version
           shopwareVersion: 6.5.x
+```
+
+The PHPStan check needs the file `phpstan.neon.dist` in the plugin root directory with the following content:
+
+```neon
+parameters:
+    # choose one of the available levels: https://phpstan.org/user-guide/rule-levels
+    level: max
+    # the paths are relative to the project root
+    # an additional path to check could be the tests directory
+    paths:
+        - src
 ```
 
 #### admin-eslint
@@ -89,7 +101,7 @@ jobs:
 
 ### Build Zip
 
-Builds the Extension zip and validates the Zip using shopware-cli
+Builds the extension zip and validates the zip using shopware-cli
 
 ```yaml
 jobs:
@@ -102,7 +114,7 @@ jobs:
 
 ### Store Upload
 
-Upload the Extension with the given Shopware Account credentials into the Account. It is recommended to use the `workflow_dispatch` event, so you have to manually trigger this from the Actions Tab.
+Upload the extension with the given Shopware account credentials into the account. It is recommended to use the `workflow_dispatch` event, so you have to manually trigger this from the Actions Tab.
 
 ```yaml
 name: Release to Store
