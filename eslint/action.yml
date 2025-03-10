@@ -56,7 +56,7 @@ runs:
     - name: Clone Shopware
       uses: actions/checkout@v4
       with:
-        repository: ${{ inputs.shopware-repository }}
+        repository: ${{ inputs.shopware-repository || 'shopware/shopware' }}
         ref: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
         token: ${{ inputs.shopware-github-token }}
 
