@@ -18,6 +18,10 @@ on:
         required: false
         type: string
         default: trunk
+      shopware-repository:
+        description: The shopware repository to checkout
+        type: string
+        default: shopware/shopware
       composerRootVersion:
         required: false
         type: string
@@ -40,6 +44,9 @@ jobs:
       - name: Setup Extension
         uses: shopware/github-actions/setup-extension@main
         with:
+          shopwareVersion: ${{ inputs.shopwareVersion }}
+          shopwareVersionFallback: ${{ inputs.shopwareVersionFallback }}
+          shopware-repository: ${{ inputs.shopware-repository }}
           extensionName: ${{ github.event.repository.name }}
           composerRootVersion: ${{ inputs.composerRootVersion }}
           install: true

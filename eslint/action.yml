@@ -26,6 +26,10 @@ inputs:
     description: Fallback version in case there's no matching branch
     required: false
     default: trunk
+  shopware-repository:
+    description: The shopware repository to checkout
+    required: true
+    default: shopware/shopware
   forceInstallAdminDeps:
     description: Install platform admin deps
     default: ""
@@ -41,12 +45,13 @@ runs:
     - uses: shopware/github-actions/shopware-version@main
       with:
         fallback: ${{ inputs.shopwareVersionFallback }}
+        repo: ${{ inputs.shopware-repository }}
       id: version
       if: ${{ inputs.shopwareVersion == '.auto' }}
     - name: Clone Shopware
       uses: actions/checkout@v4
       with:
-        repository: shopware/shopware
+        repository: ${{ inputs.shopware-repository }}
         ref: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
 
     - name: Clone Extension

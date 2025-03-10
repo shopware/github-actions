@@ -21,6 +21,10 @@ on:
         required: false
         type: string
         default: trunk
+      shopware-repository:
+        description: The shopware repository to checkout
+        type: string
+        default: shopware/shopware
       composerRootVersion:
         required: false
         type: string
@@ -39,12 +43,14 @@ jobs:
       - uses: shopware/github-actions/shopware-version@main
         with:
           fallback: ${{ inputs.shopwareVersionFallback }}
+          repo: ${{ inputs.shopware-repository }}
         id: version
         if: ${{ inputs.shopwareVersion == '.auto' }}
       - name: Setup Shopware
         uses: shopware/setup-shopware@main
         with:
           shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+          shopware-repository: ${{ inputs.shopware-repository }}
           composer-root-version: ${{ inputs.composerRootVersion }}
           php-version: 8.2
           env: prod

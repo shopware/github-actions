@@ -18,6 +18,10 @@ on:
           required: false
           type: string
           default: trunk
+        shopware-repository:
+          description: The shopware repository to checkout
+          type: string
+          default: shopware/shopware
 
 jobs:
   run:
@@ -27,14 +31,14 @@ jobs:
       - uses: shopware/github-actions/shopware-version@main
         with:
           fallback: ${{ inputs.shopwareVersionFallback }}
+          repo: ${{ inputs.shopware-repository }}
         id: version
         if: ${{ inputs.shopwareVersion == '.auto' }}
       - name: Clone Shopware
         uses: actions/checkout@v4
         with:
-          repository: shopware/shopware
+          repository: ${{ inputs.shopware-repository }}
           ref: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
-
       - name: Clone Extension
         uses: actions/checkout@v4
         with:
