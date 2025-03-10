@@ -30,6 +30,10 @@ inputs:
     description: The shopware repository to checkout
     required: true
     default: shopware/shopware
+  shopware-github-token:
+    description: Token used for checking out the shopware repository
+    required: true
+    default: ${{ github.token }}
   forceInstallAdminDeps:
     description: Install platform admin deps
     default: ""
@@ -46,6 +50,7 @@ runs:
       with:
         fallback: ${{ inputs.shopwareVersionFallback }}
         repo: ${{ inputs.shopware-repository }}
+        shopware-github-token: ${{ inputs.shopware-github-token }}
       id: version
       if: ${{ inputs.shopwareVersion == '.auto' }}
     - name: Clone Shopware
@@ -53,6 +58,7 @@ runs:
       with:
         repository: ${{ inputs.shopware-repository }}
         ref: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+        token: ${{ inputs.shopware-github-token }}
 
     - name: Clone Extension
       uses: actions/checkout@v4

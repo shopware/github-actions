@@ -27,6 +27,10 @@ inputs:
     description: The shopware repository to checkout
     required: true
     default: shopware/shopware
+  shopware-github-token:
+    description: Token used for checking out the shopware repository
+    required: true
+    default: ${{ github.token }}
   phpVersion:
     description: PHP version to use
     required: false
@@ -99,6 +103,8 @@ runs:
     - uses: shopware/github-actions/shopware-version@main
       with:
         fallback: ${{ inputs.shopwareVersionFallback }}
+        repo: ${{ inputs.shopware-repository }}
+        shopware-github-token: ${{ inputs.shopware-github-token }}
       id: version
       if: ${{ inputs.shopwareVersion == '.auto' || inputs.shopwareVersion == '' }}
 
@@ -107,6 +113,7 @@ runs:
       with:
         shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
         shopware-repository: ${{ inputs.shopware-repository }}
+        shopware-github-token: ${{ inputs.shopware-github-token }}
         php-version: ${{ inputs.phpVersion }}
         mysql-version: ${{ inputs.mysqlVersion }}
         node-version: ${{ inputs.node-version }}
