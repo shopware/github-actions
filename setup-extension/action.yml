@@ -23,6 +23,10 @@ inputs:
     description: Fallback version in case there's no matching branch
     required: false
     default: trunk
+  shopware-repository:
+    description: The shopware repository to checkout
+    required: true
+    default: shopware/shopware
   phpVersion:
     description: PHP version to use
     required: false
@@ -102,6 +106,7 @@ runs:
       uses: shopware/setup-shopware@main
       with:
         shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
+        shopware-repository: ${{ inputs.shopware-repository }}
         php-version: ${{ inputs.phpVersion }}
         mysql-version: ${{ inputs.mysqlVersion }}
         node-version: ${{ inputs.node-version }}
