@@ -14,6 +14,10 @@ inputs:
     description: The repo where to look for matching refs
     default: shopware/shopware
     required: false
+  shopware-github-token:
+    description: Token used for checking out the shopware repository
+    required: true
+    default: ${{ github.token }}
 
 outputs:
   shopware-version:
@@ -23,6 +27,10 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - shell: bash
+      run: |
+        git config "http.https://github.com/${{ inputs.repo }}".extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${{ inputs.shopware-github-token }}" | base64 -w0)"
+
     - name: Get shopware version
       id: get-version
       shell: bash
