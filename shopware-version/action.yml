@@ -29,7 +29,7 @@ runs:
   steps:
     - shell: bash
       run: |
-        git config "http.https://github.com/${{ inputs.repo }}".extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${{ inputs.shopware-github-token }}" | base64 -w0)"
+        git config --global "http.https://github.com/${{ inputs.repo }}".extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${{ inputs.shopware-github-token }}" | base64 -w0)"
 
     - name: Get shopware version
       id: get-version
