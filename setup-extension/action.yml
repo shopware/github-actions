@@ -112,7 +112,7 @@ runs:
       uses: shopware/setup-shopware@main
       with:
         shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
-        shopware-repository: ${{ inputs.shopware-repository }}
+        shopware-repository: ${{ inputs.shopware-repository  || 'shopware/shopware' }}
         shopware-github-token: ${{ inputs.shopware-github-token }}
         php-version: ${{ inputs.phpVersion }}
         mysql-version: ${{ inputs.mysqlVersion }}
