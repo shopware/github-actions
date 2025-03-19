@@ -32,13 +32,17 @@ on:
       dependencies:
         required: false
         type: string
+      runner:
+        required: false
+        type: string
+        default: ubuntu-latest
 env:
   SHOPWARE_TOOL_CACHE_PHPSTAN: ${{ github.workspace }}/var/phpstan
 
 jobs:
   run:
     name: Static Analyse
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - uses: shopware/github-actions/shopware-version@main
         with:
