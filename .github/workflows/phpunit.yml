@@ -42,6 +42,10 @@ on:
         required: false
         type: boolean
         default: false
+      runner:
+        required: true
+        type: string
+        default: ubuntu-latest
     secrets:
       codecovToken:
         description: "Codecov token"
@@ -53,7 +57,7 @@ on:
 jobs:
   run:
     name: Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - uses: shopware/github-actions/shopware-version@main
         with:
