@@ -33,7 +33,7 @@ on:
         required: false
         type: string
       runner:
-        required: true
+        required: false
         type: string
         default: ubuntu-latest
 env:

@@ -43,7 +43,7 @@ on:
         type: boolean
         default: false
       runner:
-        required: true
+        required: false
         type: string
         default: ubuntu-latest
     secrets:
