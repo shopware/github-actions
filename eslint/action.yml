@@ -73,19 +73,16 @@ runs:
     - name: Install admin deps
       shell: bash
       if: ${{ inputs.forceInstallAdminDeps || contains(inputs.projectPath, 'administration') }}
-      working-directory: src/Administration/Resources/app/administration
-      run: npm ci --no-audit --no-fund --prefer-offline
+      run: npm ci --no-audit --no-fund --prefer-offline --prefix "src/Administration/Resources/app/administration"
 
     - name: Install storefront deps
       shell: bash
       if: ${{ inputs.forceInstallStorefrontDeps || contains(inputs.projectPath, 'storefront') }}
-      working-directory: src/Storefront/Resources/app/storefront
-      run: npm ci --no-audit --no-fund --prefer-offline
+      run: npm ci --no-audit --no-fund --prefer-offline  --prefix "src/Storefront/Resources/app/storefront"
 
     - name: Install Plugin Dependencies
       shell: bash
-      working-directory: custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}
-      run: npm install --no-audit --no-fund --prefer-offline
+      run: npm install --no-audit --no-fund --prefer-offline --prefix "custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}"
 
     - name: Run Lint command
       shell: bash
