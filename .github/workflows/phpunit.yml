@@ -64,7 +64,7 @@ jobs:
           fallback: ${{ inputs.shopwareVersionFallback }}
           repo: ${{ inputs.shopware-repository }}
         id: version
-        if: ${{ inputs.shopwareVersion == '.auto' }}
+        if: ${{ inputs.shopwareVersion == '.auto' || inputs.shopwareVersion == '' }}
       - name: Setup Shopware
         uses: shopware/setup-shopware@main
         with:
