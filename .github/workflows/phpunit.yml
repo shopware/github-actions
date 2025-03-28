@@ -103,9 +103,9 @@ jobs:
         working-directory: custom/plugins/${{ inputs.extensionName }}
         run: |
           if [ -n "${{ inputs.filterName }}" ]; then
-            ${{ GITHUB_WORKSPACE }}/vendor/bin/phpunit --testsuite ${{ inputs.filterName }} --coverage-clover clover.xml
+            ${{ github.workspace }}/vendor/bin/phpunit --testsuite ${{ inputs.filterName }} --coverage-clover clover.xml
           else
-            ${{ GITHUB_WORKSPACE }}/vendor/bin/phpunit --coverage-clover clover.xml
+            ${{ github.workspace }}/vendor/bin/phpunit --coverage-clover clover.xml
           fi
       - name: Upload Coverage
         if: inputs.uploadCoverage == true
