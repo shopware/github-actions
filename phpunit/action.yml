@@ -13,6 +13,10 @@ inputs:
     description: "Upload coverage to codecov. Requires token in CODECOV_TOKEN"
     required: false
     default: ""
+  filterName:
+    description: "PHPUnit 11 requires a testsuite filter"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -20,7 +24,12 @@ runs:
     - name: Run PHPUnit
       shell: bash
       working-directory: custom/plugins/${{ inputs.extensionName }}
-      run: ${GITHUB_WORKSPACE}/vendor/bin/phpunit --coverage-clover clover.xml
+      run: |
+        if [ -n "${{ inputs.filterName }}" ]; then
+          ${{ GITHUB_WORKSPACE }}/vendor/bin/phpunit --testsuite ${{ inputs.filterName }} --coverage-clover clover.xml
+        else
+          ${{ GITHUB_WORKSPACE }}/vendor/bin/phpunit --coverage-clover clover.xml
+        fi
     - name: Upload Coverage
       if: inputs.uploadCoverage == true
       uses: codecov/codecov-action@v4
