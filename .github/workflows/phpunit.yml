@@ -46,6 +46,11 @@ on:
         required: false
         type: string
         default: ubuntu-latest
+      filterName:
+        description: "PHPUnit 11 requires a testsuite filter"
+        required: false
+        type: string
+        default: ""
     secrets:
       codecovToken:
         description: "Codecov token"
@@ -96,7 +101,12 @@ jobs:
         run: composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name)
       - name: Run PHPUnit
         working-directory: custom/plugins/${{ inputs.extensionName }}
-        run: ${{ github.workspace }}/vendor/bin/phpunit --coverage-clover clover.xml
+        run: |
+          if [ -n "${{ inputs.filterName }}" ]; then
+            ${{ GITHUB_WORKSPACE }}/vendor/bin/phpunit --testsuite ${{ inputs.filterName }} --coverage-clover clover.xml
+          else
+            ${{ GITHUB_WORKSPACE }}/vendor/bin/phpunit --coverage-clover clover.xml
+          fi
       - name: Upload Coverage
         if: inputs.uploadCoverage == true
         uses: codecov/codecov-action@v4
