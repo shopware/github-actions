@@ -32,6 +32,19 @@ on:
       dependencies:
         required: false
         type: string
+      extraRepositories:
+        required: false
+        type: string
+        description: |
+          Additional composer repositories
+          Example:
+            {
+              "customRepo": {
+                "type": "vcs",
+                "url": "https://my-custom-repo.example.test/foo/bar.git"
+              }
+            }
+        default: "{}"
       runner:
         required: false
         type: string
@@ -56,6 +69,7 @@ jobs:
           env: prod
           install: "true"
           dependencies: ${{ inputs.dependencies }}
+          extraRepositories: ${{ inputs.extraRepositories }}
       - name: Create phpstan.neon
         working-directory: custom/plugins/${{ inputs.extensionName }}
         run: |
