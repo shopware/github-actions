@@ -55,6 +55,7 @@ jobs:
           phpVersion: 8.2
           env: prod
           install: "true"
+          dependencies: ${{ inputs.dependencies }}
       - name: Create phpstan.neon
         working-directory: custom/plugins/${{ inputs.extensionName }}
         run: |
