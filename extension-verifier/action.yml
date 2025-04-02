@@ -6,7 +6,7 @@ branding:
   icon: "download"
 inputs:
   version:
-    description: "The of extension verifier to use"
+    description: "The extension verifier to use"
     required: false
     default: "latest"
   action:
