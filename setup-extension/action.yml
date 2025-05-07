@@ -190,6 +190,8 @@ runs:
       if: inputs.dependencies
       env:
         DEPS: ${{ inputs.dependencies }}
+        REF: ${{ inputs.shopwareVersion}}
+        FALLBACK: ${{ inputs.shopwareVersionFallback }}
       run: |
         for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do
           dep_name=$(echo "$dep" | jq -r '.name')
@@ -198,11 +200,16 @@ runs:
           dep_token=$(echo "$dep" | jq -r '.token // empty')
           if [ -n "${dep_token}" ]; then
             # if a custom token is provided use this token to clone
-            git clone -c "http.${dep_repo}/.extraheader=AUTHORIZATION: basic $(echo -n "x-access-token:${dep_token}" | base64)" "${dep_repo}" "custom/plugins/${dep_name}"
-          else
-            git clone "$dep_repo" "custom/plugins/$dep_name"
+            git config --global "http.${dep_repo}/.extraheader" "AUTHORIZATION: basic $(echo -n "x-access-token:${dep_token}" | base64)"
           fi
+
+          git clone "$dep_repo" "custom/plugins/$dep_name"
+          
           if [ -n "${dep_branch}" ]; then
+            if [ "${dep_branch}" = ".auto" ]; then
+              export REPO="$(echo "${dep_repo}")" "${GITHUB_ACTION_PATH}/../shopware-version/shopware-version.bash"
+              dep_branch=$(cat "$GITHUB_OUTPUT" | grep "^shopware-version=" | cut -d'=' -f2)
+            fi
             git -C custom/plugins/${dep_name} checkout ${dep_branch}
           fi
         done
