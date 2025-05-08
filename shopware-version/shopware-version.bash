@@ -25,11 +25,16 @@ if [[ -n "${PR_NR}" ]]; then
     BASE_REF="$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}"  --jq '.baseRefName' --json baseRefName)"
 fi
 
-remote_ref=$(git ls-remote --heads "https://github.com/${REPO}" "${ref}" | cut -f 2)
+# if REPO does not start with https add https://github.com/
+if [[ "${REPO}" != https://* ]]; then
+    REPO="https://github.com/${REPO}"
+fi
+
+remote_ref=$(git ls-remote --heads "${REPO}" "${ref}" | cut -f 2)
 if [[ -n "${remote_ref}" ]]; then
     version="${remote_ref#"refs/heads/"}"
 else
-    remote_ref=$(git ls-remote --heads "https://github.com/${REPO}" "refs/heads/${BASE_REF}" | cut -f 2)
+    remote_ref=$(git ls-remote --heads "${REPO}" "refs/heads/${BASE_REF}" | cut -f 2)
     if [[ -n "${remote_ref}" ]]; then
         version="${remote_ref#"refs/heads/"}"
     fi
