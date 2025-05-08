@@ -207,7 +207,7 @@ runs:
           
           if [ -n "${dep_branch}" ]; then
             if [ "${dep_branch}" = ".auto" ]; then
-              export REPO="$(echo "${dep_repo}")" "${GITHUB_ACTION_PATH}/../shopware-version/shopware-version.bash"
+              REPO="$(echo "${dep_repo}")" "${GITHUB_ACTION_PATH}/../shopware-version/shopware-version.bash"
               dep_branch=$(cat "$GITHUB_OUTPUT" | grep "^shopware-version=" | cut -d'=' -f2)
             fi
             git -C custom/plugins/${dep_name} checkout ${dep_branch}
