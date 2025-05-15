@@ -21,14 +21,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Pull verifier
-      run: docker pull ghcr.io/shopwarelabs/extension-verifier:${{ inputs.version }}
-      shell: bash
+    - name: Install Shopware-CLI
+      uses: shopware/shopware-cli-action
     - name: Run verifier
       if: inputs.action == 'check'
       shell: bash
-      run: docker run --rm -e GITHUB_STEP_SUMMARY -e GITHUB_ACTIONS -v $GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY -v $(pwd):/ext ghcr.io/shopwarelabs/extension-verifier:${{ inputs.version }} check /ext --check-against ${{ inputs.check-against }}
+      run: shopware-cli extension validate --full --check-against ${{ inputs.check-against }} .
     - name: Run formatter
       if: inputs.action == 'format'
       shell: bash
-      run: docker run --rm -e GITHUB_STEP_SUMMARY -e GITHUB_ACTIONS -v $GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY -v $(pwd):/ext ghcr.io/shopwarelabs/extension-verifier:${{ inputs.version }} format /ext --dry-run
+      run: shopware-cli extension format . --dry-run
