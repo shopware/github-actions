@@ -8,10 +8,10 @@ branding:
 inputs:
   major:
     description: Current major prefix like v6.6.
-    default: v6.6.
+    default: v6.7.
   lts-major:
     description: LTS major prefix like v6.5.
-    default: v6.5.
+    default: v6.6.
 
 outputs:
   first-version:
