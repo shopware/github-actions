@@ -30,6 +30,10 @@ inputs:
     description: "Skip the checkout step"
     required: false
     default: "false"
+  updateInfo:
+    description: "Update extension information on the Shopware Store plugin page"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -56,6 +60,14 @@ runs:
     - name: Store Upload
       shell: bash
       run: shopware-cli account producer extension upload $(pwd)/${{ inputs.extensionName }}.zip
+      env:
+        GITHUB_TOKEN: ${{ inputs.ghToken }}
+        SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ inputs.accountUser }}
+        SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ inputs.accountPassword }}
+    - name: Update Extension Info
+      shell: bash
+      if: inputs.updateInfo == 'true'
+      run: shopware-cli account producer extension info push $(pwd)/${{ inputs.extensionName }}.zip
       env:
         GITHUB_TOKEN: ${{ inputs.ghToken }}
         SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ inputs.accountUser }}
