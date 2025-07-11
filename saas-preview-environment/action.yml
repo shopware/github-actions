@@ -1,0 +1,35 @@
+name: SaaS Preview Environment
+description: "Create, migrate or archive a SaaS Preview Environment"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  action:
+    description: Which action to run? (create, archive)
+    required: true
+    default: create
+  token:
+    description: Token to use (if empty a token from octo-sts would be used)
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get token
+      if: ${{ inputs.token == '' }}
+      uses: octo-sts/action@main
+      id: octo-sts
+      with:
+        scope: shopware/saas
+        identity: PreviewEnvironment
+    - name: Trigger preview environment
+      uses: shopware/github-actions/downstream@main
+      with:
+        repo: shopware/saas
+        workflow: "preview-environment.yml"
+        ref: ".auto"
+        timeout: 60m
+        token: ${{ inputs.token || steps.octo-sts.outputs.token }}
+        env: "ACTION=${{ inputs.action }}\nACTOR=${{ github.actor }}\nISSUE_NUMBER=${{ github.event.pull_request.number }}"
