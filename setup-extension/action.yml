@@ -114,7 +114,7 @@ runs:
       if: ${{ inputs.shopwareVersion == '.auto' || inputs.shopwareVersion == '' }}
 
     - name: Setup Shopware
-      uses: shopware/setup-shopware@main
+      uses: shopware/setup-shopware@feat-update-runs-on-action
       with:
         shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
         shopware-repository: ${{ inputs.shopware-repository  || 'shopware/shopware' }}
