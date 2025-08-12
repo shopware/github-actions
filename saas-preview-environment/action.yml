@@ -13,6 +13,10 @@ inputs:
   token:
     description: Token to use (if empty a token from octo-sts would be used)
     required: false
+  refFallback:
+    description: Fallback ref in case there's no matching branch.
+    required: false
+    default: "trunk"
 
 runs:
   using: "composite"
@@ -30,6 +34,7 @@ runs:
         repo: shopware/saas
         workflow: "preview-environment.yml"
         ref: ".auto"
+        refFallback: ${{ inputs.refFallback }}
         timeout: 60m
         token: ${{ inputs.token || steps.octo-sts.outputs.token }}
         env: "ACTION=${{ inputs.action }}\nACTOR=${{ github.actor }}\nISSUE_NUMBER=${{ github.event.pull_request.number }}"
