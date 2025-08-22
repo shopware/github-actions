@@ -20,6 +20,12 @@ outputs:
   latest-version:
     description: The latest version of the current major
     value: ${{ steps.get-versions.outputs.CUR_MAJOR_MAX_TAG }}
+  next-minor:
+    description: The next minor version
+    value: ${{ steps.get-versions.outputs.NEXT_MINOR }}
+  next-patch:
+    description: The next patch version
+    value: ${{ steps.get-versions.outputs.NEXT_PATCH }}
 
   lts-first-version:
     description: The first version of the lts major
