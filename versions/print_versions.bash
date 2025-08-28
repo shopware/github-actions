@@ -1,22 +1,39 @@
 #!/usr/bin/env bash
 
-PREV_MAJOR="${PREV_MAJOR:-"v6.5."}"
-CUR_MAJOR="${CUR_MAJOR:-"v6.6."}"
+PREV_MAJOR="${PREV_MAJOR:-"v6.6."}"
+CUR_MAJOR="${CUR_MAJOR:-"v6.7."}"
 
 # make sure tag is prefixed with v
 PREV_MAJOR="v${PREV_MAJOR#v}"
 CUR_MAJOR="v${CUR_MAJOR#v}"
 
 get_tags() {
-    git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags 2>/dev/null https://github.com/shopware/shopware \
-        | cut --delimiter='/' --fields=3 | grep -v -i -E '(dev|beta|alpha)'
+    git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/shopware/shopware 2>/dev/null |
+        cut --delimiter='/' --fields=3 | grep -v -i -E '(dev|beta|alpha)'
 }
 
 get_tags_without_rc() {
-    git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags 2>/dev/null https://github.com/shopware/shopware \
-        | cut --delimiter='/' --fields=3 | grep -v -i -E 'rc'
+    git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/shopware/shopware 2>/dev/null |
+        cut --delimiter='/' --fields=3 | grep -v -i -E 'rc'
 }
 
+get_next_minor_and_patch() {
+    DAY_OF_WEEK=$(date --utc +%u) # 1=Monday, 7=Sunday
+    DAY_NEXT_MONDAY=$(date --utc --date="+$((8 - ${DAY_OF_WEEK})) days" +%d)
+
+    version=${1}
+    local max_tag=$(get_tags_without_rc | grep -E "^${version}" | tail -n 1)
+    if [[ -z $max_tag ]]; then
+        max_tag=$(get_tags | grep -E "^${version}" | tail -n 1)
+    fi
+    IFS='.' read -r -a parts <<<"${max_tag}"
+    if [ "$DAY_NEXT_MONDAY" -lt 7 ]; then
+        echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 2)).0"
+    else
+        echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 1)).0"
+    fi
+    echo "NEXT_PATCH=${parts[0]}.${parts[1]}.${parts[2]}.$((${parts[3]} + 1))"
+}
 
 print_min_max_tag() {
     local min_tag=$(get_tags_without_rc | grep -E "^$2" | head -n 1)
@@ -34,6 +51,6 @@ print_min_max_tag() {
     echo "${1}_MAX_TAG=$max_tag"
 }
 
-
 print_min_max_tag PREV_MAJOR "$PREV_MAJOR"
 print_min_max_tag CUR_MAJOR "$CUR_MAJOR"
+get_next_minor_and_patch "${CUR_MAJOR}"
