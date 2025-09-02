@@ -33,6 +33,14 @@ get_next_minor_and_patch() {
         echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 1)).0"
     fi
     echo "NEXT_PATCH=${parts[0]}.${parts[1]}.${parts[2]}.$((${parts[3]} + 1))"
+
+    local max_lts_tag=$(get_tags_without_rc | grep -E "^${PREV_MAJOR}" | tail -n 1)
+    if [[ -z $max_lts_tag ]]; then
+        max_lts_tag=$(get_tags | grep -E "^${PREV_MAJOR}" | tail -n 1)
+    fi
+    IFS='.' read -r -a lts_parts <<<"${max_lts_tag}"
+
+    echo "NEXT_LTS_PATCH=${lts_parts[0]}.${lts_parts[1]}.${lts_parts[2]}.$((${lts_parts[3]} + 1))"
 }
 
 print_min_max_tag() {

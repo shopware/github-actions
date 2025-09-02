@@ -33,6 +33,10 @@ outputs:
   lts-latest-version:
     description: The latest version of the lts major
     value: ${{ steps.get-versions.outputs.PREV_MAJOR_MAX_TAG }}
+  lts-next-patch:
+    description: The next patch version of the lts major
+    value: ${{ steps.get-versions.outputs.NEXT_LTS_PATCH }}
+
 
 runs:
   using: "composite"
