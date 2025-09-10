@@ -25,10 +25,25 @@ jobs:
         strategy:
             matrix:
                 test-case:
-                    - base-ref: "6.7.3.99"
+                    - ref: this-branch-does-not-exist
+                      base-ref: "6.7.3.99"
                       expected-version: "6.7.3.x"
-                    - base-ref: "6.6.99.99"
+                    - ref: this-branch-does-not-exist
+                      base-ref: "6.6.99.99"
                       expected-version: "6.6.x"
+                    - ref: trunk
+                      base-ref: "6.7.3.99"
+                      expected-version: "trunk"
+                    # refs/heads form
+                    - ref: refs/heads/this-branch-does-not-exist
+                      base-ref: "refs/heads/6.7.3.99"
+                      expected-version: "6.7.3.x"
+                    - ref: refs/heads/this-branch-does-not-exist
+                      base-ref: "refs/heads/6.6.99.99"
+                      expected-version: "6.6.x"
+                    - ref: refs/heads/trunk
+                      base-ref: "refs/heads/6.7.3.99"
+                      expected-version: "trunk"
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -36,7 +51,7 @@ jobs:
               id: version
               uses: ./shopware-version
               with:
-                ref: test-branch
+                ref: ${{ matrix.test-case.ref }}
                 base-ref: ${{ matrix.test-case.base-ref }}
                 head-ref: test-branch
                 repo: shopware/shopware
