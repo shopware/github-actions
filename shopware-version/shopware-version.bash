@@ -22,7 +22,7 @@ get_ref() {
     if [[ -n "${HEAD_REF}" ]]; then
         echo "refs/heads/${HEAD_REF}"
     else
-        echo "${REF}"
+        echo "refs/heads/${REF#"refs/heads/"}"
     fi
 }
 
@@ -33,7 +33,7 @@ get_base_ref() {
     fi
 
     if [[ -n "${BASE_REF}" ]]; then
-        echo "${BASE_REF}"
+        echo "refs/heads/${BASE_REF#"refs/heads/"}"
     fi
 }
 
