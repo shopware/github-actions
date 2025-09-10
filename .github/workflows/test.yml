@@ -22,18 +22,32 @@ jobs:
                 fi
     shopware-version:
         runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                test-case:
+                    - base-ref: "6.7.3.99"
+                      expected-version: "6.7.3.x"
+                    - base-ref: "6.6.99.99"
+                      expected-version: "6.6.x"
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
             - name: Test shopware-version
-              env:
-                REF: "${{ github.ref }}"
-                BASE_REF: "${{ github.base_ref }}"
-                HEAD_REF: "${{ github.head_ref }}"
-                REPO: "${{ inputs.repo || 'shopware/shopware' }}"
-                CURRENT_REPO: "${{ github.repository }}"
-                FALLBACK: "${{ inputs.fallback || 'trunk' }}"
+              id: version
+              uses: ./shopware-version
+              with:
+                ref: test-branch
+                base-ref: ${{ matrix.test-case.base-ref }}
+                head-ref: test-branch
+                repo: shopware/shopware
+                fallback: 'not-found'
+            - name: Check shopware-version matches expected version
               run: |
-                env
-
-
+                SHOPWARE_VERSION="${{ steps.version.outputs.shopware-version }}"
+                EXPECTED_VERSION="${{ matrix.test-case.expected-version }}"
+                echo "shopware-version: '${SHOPWARE_VERSION}'"
+                echo "expected-version: '${EXPECTED_VERSION}'"
+                if [[ "${SHOPWARE_VERSION}" != "${EXPECTED_VERSION}" ]]; then
+                    echo "shopware-version should be '${EXPECTED_VERSION}' but got '${SHOPWARE_VERSION}'"
+                    exit 1
+                fi
