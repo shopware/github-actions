@@ -32,7 +32,7 @@ jobs:
                       base-ref: "6.6.99.99"
                       expected-version: "6.6.x"
                     - ref: trunk
-                      base-ref: "6.7.3.99"
+                      base-ref: "6.7.99.99"
                       expected-version: "trunk"
                     # refs/heads form
                     - ref: refs/heads/this-branch-does-not-exist
@@ -42,7 +42,7 @@ jobs:
                       base-ref: "refs/heads/6.6.99.99"
                       expected-version: "6.6.x"
                     - ref: refs/heads/trunk
-                      base-ref: "refs/heads/6.7.3.99"
+                      base-ref: "refs/heads/6.7.99.99"
                       expected-version: "trunk"
         steps:
             - name: Checkout code
