@@ -3,7 +3,7 @@ on:
   pull_request:
 
 jobs:
-    shopware-version:
+    shopware-version-fallback:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -20,7 +20,20 @@ jobs:
                     echo 'shopware-version should not be empty'
                     exit 1
                 fi
-
-                
+    shopware-version:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Test shopware-version
+              env:
+                REF: "${{ github.ref }}"
+                BASE_REF: "${{ github.base_ref }}"
+                HEAD_REF: "${{ github.head_ref }}"
+                REPO: "${{ inputs.repo || 'shopware/shopware' }}"
+                CURRENT_REPO: "${{ github.repository }}"
+                FALLBACK: "${{ inputs.fallback || 'trunk' }}"
+              run: |
+                env
 
 
