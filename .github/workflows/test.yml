@@ -67,6 +67,7 @@ jobs:
             - name: Test shopware-version with refs/heads/
               id: version-heads
               uses: ./shopware-version
+              if: ${{ matrix.test-case.base-ref != ' ' }}
               with:
                 ref: refs/heads/${{ matrix.test-case.ref }}
                 base-ref: refs/heads/${{ matrix.test-case.base-ref }}
@@ -74,6 +75,7 @@ jobs:
                 repo: shopware/shopware
                 fallback: 'not-found'
             - name: Check shopware-version matches expected version
+              if: ${{ matrix.test-case.base-ref != ' ' }}
               run: |
                 SHOPWARE_VERSION="${{ steps.version-heads.outputs.shopware-version }}"
                 EXPECTED_VERSION="${{ matrix.test-case.expected-version }}"
