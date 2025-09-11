@@ -60,22 +60,22 @@ jobs:
                     echo "shopware-version should be '${EXPECTED_VERSION}' but got '${SHOPWARE_VERSION}'"
                     exit 1
                 fi
-            # - name: Test shopware-version with refs/heads/
-            #   id: version-heads
-            #   uses: ./shopware-version
-            #   with:
-            #     ref: refs/heads/${{ matrix.test-case.ref }}
-            #     base-ref: refs/heads/${{ matrix.test-case.base-ref }}
-            #     head-ref: refs/heads/${{ matrix.test-case.ref }}
-            #     repo: shopware/shopware
-            #     fallback: 'not-found'
-            # - name: Check shopware-version matches expected version
-            #   run: |
-            #     SHOPWARE_VERSION="${{ steps.version-heads.outputs.shopware-version }}"
-            #     EXPECTED_VERSION="${{ matrix.test-case.expected-version }}"
-            #     echo "shopware-version: '${SHOPWARE_VERSION}'"
-            #     echo "expected-version: '${EXPECTED_VERSION}'"
-            #     if [[ "${SHOPWARE_VERSION}" != "${EXPECTED_VERSION}" ]]; then
-            #         echo "shopware-version should be '${EXPECTED_VERSION}' but got '${SHOPWARE_VERSION}'"
-            #         exit 1
-            #     fi
+            - name: Test shopware-version with refs/heads/
+              id: version-heads
+              uses: ./shopware-version
+              with:
+                ref: refs/heads/${{ matrix.test-case.ref }}
+                base-ref: refs/heads/${{ matrix.test-case.base-ref }}
+                head-ref: refs/heads/${{ matrix.test-case.head-ref || matrix.test-case.ref }}
+                repo: shopware/shopware
+                fallback: 'not-found'
+            - name: Check shopware-version matches expected version
+              run: |
+                SHOPWARE_VERSION="${{ steps.version-heads.outputs.shopware-version }}"
+                EXPECTED_VERSION="${{ matrix.test-case.expected-version }}"
+                echo "shopware-version: '${SHOPWARE_VERSION}'"
+                echo "expected-version: '${EXPECTED_VERSION}'"
+                if [[ "${SHOPWARE_VERSION}" != "${EXPECTED_VERSION}" ]]; then
+                    echo "shopware-version should be '${EXPECTED_VERSION}' but got '${SHOPWARE_VERSION}'"
+                    exit 1
+                fi
