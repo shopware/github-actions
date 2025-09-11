@@ -38,6 +38,10 @@ jobs:
                       head-ref: trunk
                       base-ref: "6.7.99.99"
                       expected-version: "trunk"
+                    # for non pr events, base-ref can be empty
+                    - ref: 6.7.2.99
+                      base-ref: " "
+                      expected-version: "6.7.2.x"
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
