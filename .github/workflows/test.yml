@@ -34,6 +34,10 @@ jobs:
                     - ref: trunk
                       base-ref: "6.7.99.99"
                       expected-version: "trunk"
+                    - ref: does-not-exist
+                      head-ref: trunk
+                      base-ref: "6.7.99.99"
+                      expected-version: "trunk"
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -43,7 +47,7 @@ jobs:
               with:
                 ref: ${{ matrix.test-case.ref }}
                 base-ref: ${{ matrix.test-case.base-ref }}
-                head-ref: ${{ matrix.test-case.ref }}
+                head-ref: ${{ matrix.test-case.haad-ref || '' }}
                 repo: shopware/shopware
                 fallback: 'not-found'
             - name: Check shopware-version matches expected version
