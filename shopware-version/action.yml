@@ -49,8 +49,8 @@ runs:
       shell: bash
       env:
         REF: "${{ inputs.ref || github.ref }}"
-        BASE_REF: "${{ inputs.base-ref || github.base_ref }}"
         HEAD_REF: "${{ inputs.head-ref || github.head_ref }}"
+        BASE_REF: "${{ inputs.base-ref || github.base_ref }}"
         REPO: "${{ inputs.repo || 'shopware/shopware' }}"
         CURRENT_REPO: "${{ github.repository }}"
         FALLBACK: "${{ inputs.fallback || 'trunk' }}"
