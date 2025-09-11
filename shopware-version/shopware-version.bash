@@ -19,9 +19,13 @@ get_ref() {
         echo "refs/heads/$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}"  --jq '.headRefName' --json headRefName)"
     fi
 
+    #remove whitespace from HEAD_REF with bash substitution
+    HEAD_REF=${HEAD_REF// /}
     if [[ -n "${HEAD_REF}" ]]; then
         echo "refs/heads/${HEAD_REF#"refs/heads/"}"
     else
+        #remove whitespace from REF with bash substitution
+        REF=${REF// /}
         echo "refs/heads/${REF#"refs/heads/"}"
     fi
 }
@@ -32,6 +36,8 @@ get_base_ref() {
         echo "$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}"  --jq '.baseRefName' --json baseRefName)"
     fi
 
+    #remove whitespace from BASE_REF with bash substitution
+    BASE_REF=${BASE_REF// /}
     if [[ -n "${BASE_REF}" ]]; then
         echo "refs/heads/${BASE_REF#"refs/heads/"}"
     fi
@@ -64,6 +70,12 @@ if [[ -n "${remote_ref}" ]]; then
     version="${remote_ref#"refs/heads/"}"
     echo "✓ Found matching REF: ${version}"
 else
+    BASE_REF=${BASE_REF// /}
+    if [[ -z "${BASE_REF}" ]]; then
+        echo "✗ BASE_REF not set, using REF '${REF}'"
+        BASE_REF="${REF}"
+    fi
+
     echo "✗ REF not found, checking BASE_REF '${BASE_REF}'"
     # Check if BASE_REF exists in target repo
     remote_ref=$(git ls-remote --heads "${REPO}" "${BASE_REF}" | cut -f 2)
