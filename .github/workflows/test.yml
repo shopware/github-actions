@@ -47,7 +47,7 @@ jobs:
               with:
                 ref: ${{ matrix.test-case.ref }}
                 base-ref: ${{ matrix.test-case.base-ref }}
-                head-ref: ${{ matrix.test-case.haad-ref || '' }}
+                head-ref: ${{ matrix.test-case.head-ref || matrix.test-case.ref }}
                 repo: shopware/shopware
                 fallback: 'not-found'
             - name: Check shopware-version matches expected version
