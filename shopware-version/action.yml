@@ -14,6 +14,18 @@ inputs:
     description: The repo where to look for matching refs
     default: shopware/shopware
     required: false
+  ref:
+    description: The git reference to match (defaults to github.ref)
+    required: false
+    default: ""
+  base-ref:
+    description: The base reference for pull requests (defaults to github.base_ref)
+    required: false
+    default: ""
+  head-ref:
+    description: The head reference for pull requests (defaults to github.head_ref)
+    required: false
+    default: ""
   shopware-github-token:
     description: Token used for checking out the shopware repository
     required: false
@@ -36,9 +48,9 @@ runs:
       id: get-version
       shell: bash
       env:
-        REF: "${{ github.ref }}"
-        BASE_REF: "${{ github.base_ref }}"
-        HEAD_REF: "${{ github.head_ref }}"
+        REF: "${{ inputs.ref || github.ref }}"
+        HEAD_REF: "${{ inputs.head-ref || github.head_ref }}"
+        BASE_REF: "${{ inputs.base-ref || github.base_ref }}"
         REPO: "${{ inputs.repo || 'shopware/shopware' }}"
         CURRENT_REPO: "${{ github.repository }}"
         FALLBACK: "${{ inputs.fallback || 'trunk' }}"

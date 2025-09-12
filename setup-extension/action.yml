@@ -190,7 +190,7 @@ runs:
       if: inputs.dependencies
       env:
         DEPS: ${{ inputs.dependencies }}
-        REF: ${{ inputs.shopwareVersion}}
+        REF: ${{ inputs.shopwareVersion }}
         FALLBACK: ${{ inputs.shopwareVersionFallback }}
       run: |
         for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do

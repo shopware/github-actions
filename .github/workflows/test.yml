@@ -3,7 +3,7 @@ on:
   pull_request:
 
 jobs:
-    shopware-version:
+    shopware-version-fallback:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -20,7 +20,68 @@ jobs:
                     echo 'shopware-version should not be empty'
                     exit 1
                 fi
-
-                
-
-
+    shopware-version:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                test-case:
+                    - ref: this-branch-does-not-exist
+                      base-ref: "6.7.3.99"
+                      expected-version: "6.7.3.x"
+                    - ref: this-branch-does-not-exist
+                      base-ref: "6.6.99.99"
+                      expected-version: "6.6.x"
+                    - ref: trunk
+                      base-ref: "6.7.99.99"
+                      expected-version: "trunk"
+                    - ref: does-not-exist
+                      head-ref: trunk
+                      base-ref: "6.7.99.99"
+                      expected-version: "trunk"
+                    # for non pr events, base-ref can be empty
+                    - ref: 6.7.2.99
+                      base-ref: " "
+                      expected-version: "6.7.2.x"
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Test shopware-version
+              id: version
+              uses: ./shopware-version
+              with:
+                ref: ${{ matrix.test-case.ref }}
+                base-ref: ${{ matrix.test-case.base-ref }}
+                head-ref: ${{ matrix.test-case.head-ref || matrix.test-case.ref }}
+                repo: shopware/shopware
+                fallback: 'not-found'
+            - name: Check shopware-version matches expected version
+              run: |
+                SHOPWARE_VERSION="${{ steps.version.outputs.shopware-version }}"
+                EXPECTED_VERSION="${{ matrix.test-case.expected-version }}"
+                echo "shopware-version: '${SHOPWARE_VERSION}'"
+                echo "expected-version: '${EXPECTED_VERSION}'"
+                if [[ "${SHOPWARE_VERSION}" != "${EXPECTED_VERSION}" ]]; then
+                    echo "shopware-version should be '${EXPECTED_VERSION}' but got '${SHOPWARE_VERSION}'"
+                    exit 1
+                fi
+            - name: Test shopware-version with refs/heads/
+              id: version-heads
+              uses: ./shopware-version
+              if: ${{ matrix.test-case.base-ref != ' ' }}
+              with:
+                ref: refs/heads/${{ matrix.test-case.ref }}
+                base-ref: refs/heads/${{ matrix.test-case.base-ref }}
+                head-ref: refs/heads/${{ matrix.test-case.head-ref || matrix.test-case.ref }}
+                repo: shopware/shopware
+                fallback: 'not-found'
+            - name: Check shopware-version matches expected version
+              if: ${{ matrix.test-case.base-ref != ' ' }}
+              run: |
+                SHOPWARE_VERSION="${{ steps.version-heads.outputs.shopware-version }}"
+                EXPECTED_VERSION="${{ matrix.test-case.expected-version }}"
+                echo "shopware-version: '${SHOPWARE_VERSION}'"
+                echo "expected-version: '${EXPECTED_VERSION}'"
+                if [[ "${SHOPWARE_VERSION}" != "${EXPECTED_VERSION}" ]]; then
+                    echo "shopware-version should be '${EXPECTED_VERSION}' but got '${SHOPWARE_VERSION}'"
+                    exit 1
+                fi
