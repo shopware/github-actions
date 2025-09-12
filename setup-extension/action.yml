@@ -105,7 +105,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: shopware/github-actions/shopware-version@feat-use-better-matching-algo
+    - uses: shopware/github-actions/shopware-version@main
       with:
         fallback: ${{ inputs.shopwareVersionFallback }}
         repo: ${{ inputs.shopware-repository }}
