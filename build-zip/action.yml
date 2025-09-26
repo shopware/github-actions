@@ -17,6 +17,10 @@ inputs:
     description: "Skip the checkout step"
     required: false
     default: 'false'
+  disableGit:
+    description: "Use the source folder as it is"
+    required: false
+    default: "false"
 
 outputs:
   artifact-id:
@@ -35,7 +39,7 @@ runs:
       uses: shopware/shopware-cli-action@v1
     - name: Build
       shell: bash
-      run: shopware-cli extension zip "${{ inputs.path }}" --git-commit "${{ github.sha }}" --release
+      run: shopware-cli extension zip "${{ inputs.path }}" ${{ (inputs.disableGit == 'false' && format('--git-commit {0}', github.sha)) || '--disable-git' }} --release
     - name: Rename
       shell: bash
       run: mv ${{ inputs.extensionName }}-${{ github.sha }}.zip ${{ inputs.extensionName }}.zip
