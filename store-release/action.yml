@@ -30,6 +30,10 @@ inputs:
     description: "Skip the checkout step"
     required: false
     default: "false"
+  disableGit:
+    description: "Use the source folder as it is"
+    required: false
+    default: "false"
   updateInfo:
     description: "Update extension information on the Shopware Store plugin page"
     required: false
@@ -42,6 +46,7 @@ runs:
       with:
         extensionName: ${{ inputs.extensionName }}
         skipCheckout: ${{ inputs.skipCheckout }}
+        disableGit: ${{ inputs.disableGit }}
 
     - name: Get version
       shell: bash
