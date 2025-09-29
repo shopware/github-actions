@@ -16,7 +16,8 @@ get_ref() {
 
     PR_NR=$(echo "${REF}" | sed -E -n "s|^refs/heads/gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\1|p")
     if [[ -n "${PR_NR}" ]]; then
-        echo "refs/heads/$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}"  --jq '.headRefName' --json headRefName)"
+        echo "refs/heads/$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.headRefName' --json headRefName)"
+        return
     fi
 
     #remove whitespace from HEAD_REF with bash substitution
@@ -33,7 +34,8 @@ get_ref() {
 get_base_ref() {
     PR_NR=$(echo "${1}" | sed -E -n "s|^refs/heads/gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\1|p")
     if [[ -n "${PR_NR}" ]]; then
-        echo "$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}"  --jq '.baseRefName' --json baseRefName)"
+        echo "$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.baseRefName' --json baseRefName)"
+        return
     fi
 
     #remove whitespace from BASE_REF with bash substitution
@@ -62,7 +64,6 @@ fi
 
 # to get the next minor from a patch branch replace last part with x
 # to get the next major from a patch branch replace last two parts with x
-
 
 echo "Step 1: Checking if REF '${REF}' exists in target repo '${REPO}'"
 remote_ref=$(git ls-remote --heads "${REPO}" "${REF}" | cut -f 2)
@@ -117,4 +118,5 @@ fi
 
 echo "Matching shopware version: $version"
 
-echo "shopware-version=$version" >> "$GITHUB_OUTPUT"
+echo "shopware-version=$version" >>"$GITHUB_OUTPUT"
+
