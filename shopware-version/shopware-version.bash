@@ -12,42 +12,44 @@ set -e
 set pipefail
 
 get_ref() {
-    local ref
-
-    PR_NR=$(echo "${REF}" | sed -E -n "s|^refs/heads/gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\1|p")
+    PR_NR=$(echo "${1}" | sed -E -n "s|^(refs/heads/)?gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\2|p")
     if [[ -n "${PR_NR}" ]]; then
-        echo "refs/heads/$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.headRefName' --json headRefName)"
+        echo "Merge queue detected. Using PR_NR: ${PR_NR} to fetch REF"
+        REF="refs/heads/$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.headRefName' --json headRefName)"
         return
     fi
 
     #remove whitespace from HEAD_REF with bash substitution
     HEAD_REF=${HEAD_REF// /}
     if [[ -n "${HEAD_REF}" ]]; then
-        echo "refs/heads/${HEAD_REF#"refs/heads/"}"
+        echo 'Using HEAD_REF as REF'
+        REF="refs/heads/${HEAD_REF#"refs/heads/"}"
     else
         #remove whitespace from REF with bash substitution
         REF=${REF// /}
-        echo "refs/heads/${REF#"refs/heads/"}"
+        REF="refs/heads/${REF#"refs/heads/"}"
     fi
 }
 
 get_base_ref() {
-    PR_NR=$(echo "${1}" | sed -E -n "s|^refs/heads/gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\1|p")
+    PR_NR=$(echo "${1}" | sed -E -n "s|^(refs/heads/)?gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\2|p")
     if [[ -n "${PR_NR}" ]]; then
-        echo "$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.baseRefName' --json baseRefName)"
+        echo "Merge queue detected. Using PR_NR: ${PR_NR} to fetch BASE_REF"
+        BASE_REF="$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.baseRefName' --json baseRefName)"
         return
     fi
 
     #remove whitespace from BASE_REF with bash substitution
     BASE_REF=${BASE_REF// /}
     if [[ -n "${BASE_REF}" ]]; then
-        echo "refs/heads/${BASE_REF#"refs/heads/"}"
+        BASE_REF="refs/heads/${BASE_REF#"refs/heads/"}"
     fi
 }
 
-REF="$(get_ref)"
+ORIGINAL_REF=${REF}
+get_ref "${ORIGINAL_REF}"
 echo "ref: ${REF}"
-BASE_REF="$(get_base_ref "${REF}")"
+get_base_ref "${ORIGINAL_REF}"
 echo "base ref: ${BASE_REF}"
 
 # if REPO does not start with https add https://github.com/
