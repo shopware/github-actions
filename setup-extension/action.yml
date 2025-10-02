@@ -110,7 +110,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: shopware/github-actions/shopware-version@feat-add-skip-build
+    - uses: shopware/github-actions/shopware-version@main
       with:
         fallback: ${{ inputs.shopwareVersionFallback }}
         repo: ${{ inputs.shopware-repository }}
@@ -119,7 +119,7 @@ runs:
       if: ${{ inputs.shopwareVersion == '.auto' || inputs.shopwareVersion == '' }}
 
     - name: Setup Shopware
-      uses: shopware/setup-shopware@main
+      uses: shopware/setup-shopware@feat-add-skip-build
       with:
         shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
         shopware-repository: ${{ inputs.shopware-repository  || 'shopware/shopware' }}
