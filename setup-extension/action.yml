@@ -83,6 +83,11 @@ inputs:
     required: false
     default: ""
 
+  skip-js-build:
+    description: Whether to skip the js build step. Default is controller by install-admin and install-storefront
+    required: false
+    default: "false"
+
   env:
     description: Environment for Shopware
     required: false
@@ -127,6 +132,7 @@ runs:
         install: ${{ inputs.install }}
         install-admin: ${{ inputs.install-admin }}
         install-storefront: ${{ inputs.install-storefront }}
+        skip-js-build: ${{ inputs.skip-js-build }}
         keep-composer-tools: ${{ inputs.keep-composer-tools }}
         env: ${{ inputs.env }}
 
