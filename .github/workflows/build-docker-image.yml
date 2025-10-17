@@ -32,7 +32,7 @@ jobs:
           run: echo "${{ secrets.ghToken }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
         - name: Install Shopware-CLI
-          uses: shopware/shopware-cli-action@v1
+          uses: shopware/shopware-cli-action@v2
 
         - name: Install Bun
           uses: oven-sh/setup-bun@v2
