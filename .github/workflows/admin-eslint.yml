@@ -35,12 +35,12 @@ jobs:
         id: version
         if: ${{ inputs.shopwareVersion == '.auto' || inputs.shopwareVersion == '' }}
       - name: Clone Shopware
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ inputs.shopware-repository || 'shopware/shopware' }}
           ref: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
       - name: Clone Extension
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: custom/plugins/${{ inputs.extensionName }}
 
