@@ -110,13 +110,13 @@ jobs:
           fi
       - name: Upload Playwright Artifacts
         if: ${{ inputs.e2eTestFramework == 'playwright' && failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: playwright-screenshots
           path: custom/plugins/${{ inputs.extensionName }}/${{ inputs.e2ePath }}/test-results
       - name: Upload Cypress Artifacts
         if: ${{ inputs.e2eTestFramework == 'cypress' && failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cypress-screenshots
           path: custom/plugins/${{ inputs.extensionName }}/${{ inputs.e2ePath }}/cypress/screenshots
