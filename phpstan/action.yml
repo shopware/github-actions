@@ -21,13 +21,13 @@ runs:
       shell: bash
       run: |
         printf "parameters:\n  tmpDir: ${{ inputs.cacheDir }}\nincludes:\n  - phpstan.neon.dist" > phpstan.neon
-    - name: PHPStan cache
-      uses: actions/cache@v4
-      with:
-        path: ${{ inputs.cacheDir }}
-        key: ${{ runner.OS }}-${{ github.repository }}-phpstan-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.OS }}-${{ github.repository }}-phpstan-
+    #- name: PHPStan cache
+    #  uses: actions/cache@v4
+    #  with:
+    #    path: ${{ inputs.cacheDir }}
+    #    key: ${{ runner.OS }}-${{ github.repository }}-phpstan-${{ github.sha }}
+    #    restore-keys: |
+    #      ${{ runner.OS }}-${{ github.repository }}-phpstan-
     - name: Build PHPStan Bootstrap
       shell: bash
       run: php ${GITHUB_WORKSPACE}/src/Core/DevOps/StaticAnalyze/phpstan-bootstrap.php
