@@ -23,7 +23,7 @@ runs:
   steps:
     - name: Get token
       if: ${{ inputs.token == '' }}
-      uses: octo-sts/action@main
+      uses: shopware/octo-sts-action@main
       id: octo-sts
       with:
         scope: shopware/saas
