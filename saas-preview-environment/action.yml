@@ -30,6 +30,8 @@ runs:
         identity: PreviewEnvironment
     - name: Trigger preview environment
       uses: shopware/github-actions/downstream@main
+      env:
+          NEW_LOGIC: 1
       with:
         repo: shopware/saas
         workflow: "preview-environment.yml"
