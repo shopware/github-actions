@@ -4,13 +4,16 @@ WORKFLOW=${2}
 RUN_ID=${3}
 POLL_INTERVAL=${4}
 
+# TODO: Remove old logic when no branches are outdated
+NEW_LOGIC=${NEW_LOGIC:-0}
+
 FILTER_DATE=$(TZ=UTC date -d "-5 minutes" "+%Y-%m-%dT%H:%M")
 MAX_ATTEMPTS=10
 ATTEMPT=1
 
 DOWNSTREAM_RUN_ID=invalid
 
-trap on_sigterm SIGTERM 
+trap on_sigterm SIGTERM
 
 on_sigterm() {
     echo "Timeout reached"
@@ -18,7 +21,7 @@ on_sigterm() {
 }
 
 fail() {
-    if [[ "${CHECK}" != "${RUN_ID}" ]]; then
+    if [[ -z "${DOWNSTREAM_RUN_ID}" ]]; then
         echo "Failed to find run id in downstream"
         exit 1
     fi
@@ -32,14 +35,23 @@ get_run_ids() {
 }
 
 find_connect_step_job_id() {
-    gh run view $1 --repo $REPO --json jobs \
-        | jq '.jobs[] | select(.steps[] | .name | contains("upstream-connect")) | .databaseId'
+    # TODO: Remove old logic when no branches are outdated
+    if [[ ${NEW_LOGIC} -ne 1 ]]; then
+        gh run view $1 --repo $REPO --json jobs |
+            jq '.jobs[] | select(.steps[] | .name | contains("upstream-connect")) | .databaseId'
+        return
+    fi
+    gh run view $1 --repo $REPO --json jobs |
+        jq --arg run_id "${RUN_ID}" '.jobs[] | select(.name | contains($run_id)) | .databaseId'
 }
 
 while true; do
+    if [[ ${ATTEMPT} -gt ${MAX_ATTEMPTS} ]]; then
+        fail
+    fi
     echo "Trying to get run id from downstream. Attempt: ${ATTEMPT}"
     ATTEMPT=$((ATTEMPT + 1))
-    
+
     readarray -t RUNS < <(get_run_ids)
 
     echo $RUNS
@@ -49,11 +61,13 @@ while true; do
         echo $job_id
 
         if [[ -n $job_id ]]; then
-            if gh run view $1 --repo $REPO --log -j $job_id | grep -q ${RUN_ID}; then
-                # Break out of for and until loop
-                DOWNSTREAM_RUN_ID=${RUN}
-                break 2
+            # TODO: Remove old logic when no branches are outdated
+            if [[ ${NEW_LOGIC} -ne 1 && ! $(gh run view ${RUN} --repo $REPO --log -j $job_id | grep -q ${RUN_ID}) ]]; then
+                continue
             fi
+            # Break out of for and until loop
+            DOWNSTREAM_RUN_ID=${RUN}
+            break 2
         fi
     done
 
@@ -66,13 +80,18 @@ echo "Downstream workflow: $url"
 echo "downstream_run_id=${DOWNSTREAM_RUN_ID}" >>$GITHUB_OUTPUT
 echo "downstream_run_url=${url}" >>$GITHUB_OUTPUT
 
+ATTEMPT=1
+
 while true; do
+    echo "Trying to get run status... Attempt: ${ATTEMPT}"
     ATTEMPT=$((ATTEMPT + 1))
     STATUS=$(gh run view --repo ${REPO} ${DOWNSTREAM_RUN_ID} --json status,conclusion | jq -r 'select(.status == "completed") | .conclusion')
 
     if [[ "${STATUS}" != "" ]]; then
         break
     fi
+
+    echo "Job is still running. Waiting 1 minute before retrying..."
 
     # Only check every minute
     sleep 60
