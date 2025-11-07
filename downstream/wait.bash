@@ -21,7 +21,7 @@ on_sigterm() {
 }
 
 fail() {
-    if [[ -z "${DOWNSTREAM_RUN_ID}" ]]; then
+    if [[ -z "${DOWNSTREAM_RUN_ID}" || ! "${DOWNSTREAM_RUN_ID}" =~ "^[0-9]+$" ]]; then
         echo "Failed to find run id in downstream"
         exit 1
     fi
@@ -62,7 +62,7 @@ while true; do
 
         if [[ -n $job_id ]]; then
             # TODO: Remove old logic when no branches are outdated
-            if [[ ${NEW_LOGIC} -ne 1 && ! $(gh run view ${RUN} --repo $REPO --log -j $job_id | grep -q ${RUN_ID}) ]]; then
+            if [[ ${NEW_LOGIC} -ne 1 ]] && ! gh run view ${RUN} --repo $REPO --log -j $job_id | grep -q ${RUN_ID}; then
                 continue
             fi
             # Break out of for and until loop
