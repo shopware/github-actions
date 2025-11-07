@@ -46,7 +46,7 @@ find_connect_step_job_id() {
 }
 
 while true; do
-    if [[ ${ATTEMPT} -gt ${MAX_ATTEMPTS} ]]; then
+    if [[ ${NEW_LOGIC} -eq 1 && ${ATTEMPT} -gt ${MAX_ATTEMPTS} ]]; then
         fail
     fi
     echo "Trying to get run id from downstream. Attempt: ${ATTEMPT}"
