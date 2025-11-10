@@ -21,7 +21,7 @@ on_sigterm() {
 }
 
 fail() {
-    if [[ -z "${DOWNSTREAM_RUN_ID}" || ! "${DOWNSTREAM_RUN_ID}" =~ "^[0-9]+$" ]]; then
+    if [[ -z "${DOWNSTREAM_RUN_ID}" || ! "${DOWNSTREAM_RUN_ID}" =~ ^[0-9]+$ ]]; then
         echo "Failed to find run id in downstream"
         exit 1
     fi
@@ -31,18 +31,18 @@ fail() {
 }
 
 get_run_ids() {
-    gh run list --workflow=$WORKFLOW --event workflow_dispatch --repo $REPO --created ">=$FILTER_DATE" --json databaseId | jq '.[] | .databaseId'
+    gh run list --workflow="${WORKFLOW}" --event workflow_dispatch --repo "${REPO}" --created ">=${FILTER_DATE}" --json databaseId | jq '.[] | .databaseId'
 }
 
 find_connect_step_job_id() {
     # TODO: Remove old logic when no branches are outdated
     if [[ ${NEW_LOGIC} -ne 1 ]]; then
-        gh run view $1 --repo $REPO --json jobs |
+        gh run view "$1" --repo "$REPO" --json jobs |
             jq '.jobs[] | select(.steps[] | .name | contains("upstream-connect")) | .databaseId'
         return
     fi
-    gh run view $1 --repo $REPO --json jobs |
-        jq --arg run_id "${RUN_ID}" '.jobs[] | select(.name | contains($run_id)) | .databaseId'
+    gh run view "$1" --repo "$REPO" --json jobs |
+        jq --arg run_id "$RUN_ID" '.jobs[] | select(.name | contains($run_id)) | .databaseId'
 }
 
 while true; do
@@ -54,15 +54,16 @@ while true; do
 
     readarray -t RUNS < <(get_run_ids)
 
-    echo $RUNS
+    echo "Found the following runs:"
+    echo "${RUNS[@]}"
 
     for RUN in "${RUNS[@]}"; do
-        job_id=$(find_connect_step_job_id $RUN)
-        echo $job_id
+        job_id=$(find_connect_step_job_id "$RUN")
+        echo "$job_id"
 
         if [[ -n $job_id ]]; then
             # TODO: Remove old logic when no branches are outdated
-            if [[ ${NEW_LOGIC} -ne 1 ]] && ! gh run view ${RUN} --repo $REPO --log -j $job_id | grep -q ${RUN_ID}; then
+            if [[ ${NEW_LOGIC} -ne 1 ]] && ! gh run view "$RUN" --repo "$REPO" --log -j "$job_id" | grep -q "$RUN_ID"; then
                 continue
             fi
             # Break out of for and until loop
@@ -71,21 +72,21 @@ while true; do
         fi
     done
 
-    sleep ${POLL_INTERVAL}
+    sleep "${POLL_INTERVAL}"
 done
 
 url=https://github.com/${REPO}/actions/runs/${DOWNSTREAM_RUN_ID}
 echo "Downstream workflow: $url"
 
-echo "downstream_run_id=${DOWNSTREAM_RUN_ID}" >>$GITHUB_OUTPUT
-echo "downstream_run_url=${url}" >>$GITHUB_OUTPUT
+echo "downstream_run_id=${DOWNSTREAM_RUN_ID}" >>"$GITHUB_OUTPUT"
+echo "downstream_run_url=${url}" >>"$GITHUB_OUTPUT"
 
 ATTEMPT=1
 
 while true; do
     echo "Trying to get run status... Attempt: ${ATTEMPT}"
     ATTEMPT=$((ATTEMPT + 1))
-    STATUS=$(gh run view --repo ${REPO} ${DOWNSTREAM_RUN_ID} --json status,conclusion | jq -r 'select(.status == "completed") | .conclusion')
+    STATUS=$(gh run view --repo "${REPO}" "${DOWNSTREAM_RUN_ID}" --json status,conclusion | jq -r 'select(.status == "completed") | .conclusion')
 
     if [[ "${STATUS}" != "" ]]; then
         break
