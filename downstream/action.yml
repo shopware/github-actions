@@ -63,7 +63,7 @@ runs:
   steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - uses: octo-sts/action@v1.0.0
+    - uses: shopware/octo-sts-action@main
       if: ${{ ! inputs.token }}
       id: sts
       with:
