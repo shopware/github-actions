@@ -107,6 +107,11 @@ inputs:
     required: false
     default: "false"
 
+  allow-insecure-versions:
+    description: This allows installing older versions of shopware with known vulnerabilities (e.g. for testing updates)
+    required: false
+    default: "false"
+
 runs:
   using: "composite"
   steps:
@@ -134,6 +139,7 @@ runs:
         install-storefront: ${{ inputs.install-storefront }}
         skip-js-build: ${{ inputs.skip-js-build }}
         keep-composer-tools: ${{ inputs.keep-composer-tools }}
+        allow-insecure-versions: ${{ inputs.allow-insecure-versions }}
         env: ${{ inputs.env }}
 
     - name: Clone Extension
