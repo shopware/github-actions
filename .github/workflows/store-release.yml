@@ -44,7 +44,7 @@ jobs:
           # fetch all git entries for changelog generation
           fetch-depth: 0
       - name: Install shopware-cli
-        uses: shopware/shopware-cli-action@v2
+        uses: shopware/shopware-cli-action@v3
         with:
           version: ${{ inputs.cliVersion }}
       - name: Build & create zip
