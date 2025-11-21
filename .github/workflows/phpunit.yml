@@ -80,7 +80,7 @@ jobs:
           composer-root-version: ${{ inputs.composerRootVersion }}
           php-extensions: pcov
       - name: Clone Extension
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: custom/plugins/${{ inputs.extensionName }}
       - name: Clone Dependencies
