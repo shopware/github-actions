@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install shopware-cli
-        uses: shopware/shopware-cli-action@v2
+        uses: shopware/shopware-cli-action@v3
       - name: Build
         run: shopware-cli extension zip "${{ inputs.path }}" --git-commit "${{ github.sha }}" --release
       - name: Rename
