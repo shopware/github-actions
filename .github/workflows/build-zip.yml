@@ -16,7 +16,7 @@ jobs:
     name: Build and Validate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install shopware-cli
         uses: shopware/shopware-cli-action@v2
       - name: Build
