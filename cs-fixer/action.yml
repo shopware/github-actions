@@ -18,7 +18,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: Setup PHP
-      uses: shivammathur/setup-php@v2
+      uses: shivammathur/setup-php@v2.35.5
       with:
         php-version: 8.2
         tools: php-cs-fixer:3.63.2, cs2pr
