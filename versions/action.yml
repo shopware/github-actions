@@ -21,8 +21,11 @@ outputs:
     description: The latest version of the current major
     value: ${{ steps.get-versions.outputs.CUR_MAJOR_MAX_TAG }}
   next-minor:
-    description: The next minor version
+    description: The next minor version that will be split off from trunk
     value: ${{ steps.get-versions.outputs.NEXT_MINOR }}
+  splitted-minor:
+    description: The latest minor version that is already splitted from trunk, this minor might not be released yet
+    value: ${{ steps.get-versions.outputs.SPLITTED_MINOR }}
   next-patch:
     description: The next patch version
     value: ${{ steps.get-versions.outputs.NEXT_PATCH }}
