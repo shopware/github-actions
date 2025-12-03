@@ -203,6 +203,8 @@ runs:
       env:
         DEPS: ${{ inputs.dependencies }}
         REF: ${{ inputs.shopwareVersion }}
+        HEAD_REF: ${{ github.head_ref }}
+        BASE_REF: ${{ github.base_ref }}
         FALLBACK: ${{ inputs.shopwareVersionFallback }}
       run: |
         for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do
@@ -216,13 +218,16 @@ runs:
           fi
 
           git clone "$dep_repo" "custom/plugins/$dep_name"
-          
+
           if [ -n "${dep_branch}" ]; then
             if [ "${dep_branch}" = ".auto" ]; then
+              echo "" >"$GITHUB_OUTPUT"
               REPO="$(echo "${dep_repo}")" "${GITHUB_ACTION_PATH}/../shopware-version/shopware-version.bash"
               dep_branch=$(cat "$GITHUB_OUTPUT" | grep "^shopware-version=" | cut -d'=' -f2)
             fi
-            git -C custom/plugins/${dep_name} checkout ${dep_branch}
+            if [ "${dep_branch}" != "trunk" ]; then
+              git -C custom/plugins/${dep_name} checkout ${dep_branch}
+            fi
           fi
         done
 
