@@ -112,6 +112,16 @@ inputs:
     required: false
     default: "false"
 
+  head-ref:
+    description: HEAD_REF to use
+    required: false
+    default: ""
+
+  base-ref:
+    description: BASE_REF to use
+    required: false
+    default: ""
+
 runs:
   using: "composite"
   steps:
@@ -203,8 +213,8 @@ runs:
       env:
         DEPS: ${{ inputs.dependencies }}
         REF: ${{ inputs.shopwareVersion }}
-        HEAD_REF: ${{ github.head_ref }}
-        BASE_REF: ${{ github.base_ref }}
+        HEAD_REF: "${{ inputs.head-ref || github.head_ref }}"
+        BASE_REF: "${{ inputs.base-ref || github.base_ref }}"
         FALLBACK: ${{ inputs.shopwareVersionFallback }}
       run: |
         for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do
