@@ -9,29 +9,36 @@ CUR_MAJOR="v${CUR_MAJOR#v}"
 
 get_tags() {
     git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/shopware/shopware 2>/dev/null |
-        cut --delimiter='/' --fields=3 | grep -v -i -E '(dev|beta|alpha)'
+        cut -d '/' -f 3 | grep -v -i -E '(dev|beta|alpha)'
 }
 
 get_tags_without_rc() {
     git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/shopware/shopware 2>/dev/null |
-        cut --delimiter='/' --fields=3 | grep -v -i -E 'rc'
+        cut -d '/' -f 3 | grep -v -i -E 'rc'
 }
 
 get_next_minor_and_patch() {
-    DAY_OF_WEEK=$(date --utc +%u) # 1=Monday, 7=Sunday
-    DAY_NEXT_MONDAY=$(date --utc --date="+$((8 - ${DAY_OF_WEEK})) days" +%d)
-
     version=${1}
     local max_tag=$(get_tags_without_rc | grep -E "^${version}" | tail -n 1)
     if [[ -z $max_tag ]]; then
         max_tag=$(get_tags | grep -E "^${version}" | tail -n 1)
     fi
     IFS='.' read -r -a parts <<<"${max_tag}"
-    if [ "$DAY_NEXT_MONDAY" -lt 7 ]; then
-        echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 2)).0"
-    else
+
+    # check if release branch already exists for 2 minor versions ahead
+    # if that is the case, that is the next minor release, as the final branch split for the version 1 minor ahead did already happen
+    NEXT_MINOR_RELEASE="${parts[0]}.${parts[1]}.$((${parts[2]} + 2)).x"
+    NEXT_MINOR_RELEASE="${NEXT_MINOR_RELEASE:1}" # remove leading 'v'
+    local branch_exists=$(git ls-remote --heads https://github.com/shopware/shopware ${NEXT_MINOR_RELEASE})
+
+    if [[ -z ${branch_exists} ]]; then
         echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 1)).0"
+        echo "SPLITTED_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]})).0"
+    else
+        echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 2)).0"
+        echo "SPLITTED_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 1)).0"
     fi
+
     echo "NEXT_PATCH=${parts[0]}.${parts[1]}.${parts[2]}.$((${parts[3]} + 1))"
 
     local max_lts_tag=$(get_tags_without_rc | grep -E "^${PREV_MAJOR}" | tail -n 1)
