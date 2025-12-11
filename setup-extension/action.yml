@@ -249,12 +249,12 @@ runs:
       run: composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name)
 
     - name: Refresh Plugins
-      if: ${{ inputs.install && env.IS_PLUGIN == 'true' }}
+      if: ${{ inputs.install == 'true' && env.IS_PLUGIN == 'true' }}
       shell: bash
       run: php bin/console plugin:refresh
 
     - name: Install extension dependencies
-      if: ${{ inputs.install && inputs.dependencies && env.IS_PLUGIN == 'true' }}
+      if: ${{ inputs.install == 'true' && inputs.dependencies && env.IS_PLUGIN == 'true' }}
       shell: bash
       env:
         DEPS: ${{ inputs.dependencies }}
@@ -266,13 +266,13 @@ runs:
         done
 
     - name: Install Plugin
-      if: ${{ inputs.install && env.IS_PLUGIN == 'true' }}
+      if: ${{ inputs.install == 'true' && env.IS_PLUGIN == 'true' }}
       shell: bash
       run: php bin/console plugin:install --activate ${{ inputs.extensionName }}
 
     # TODO: install deps for all bundles (bin/ci bundle:dump -> foreach bundle in var/plugins.json)
     - name: Install extension admin deps
-      if: ${{ inputs.install-admin }}
+      if: ${{ inputs.install-admin == 'true' }}
       shell: bash
       run: |
         if [[ -r "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/administration/package.json" ]]; then
@@ -280,20 +280,20 @@ runs:
         fi
 
     - name: Install app
-      if: ${{ inputs.install && env.IS_APP == 'true' }}
+      if: ${{ inputs.install == 'true' && env.IS_APP == 'true' }}
       shell: bash
       run: |-
         bin/console app:refresh -n -a ${{ inputs.extensionName }}
 
     - name: Install storefront deps
-      if: ${{ inputs.install-storefront }}
+      if: ${{ inputs.install-storefront == 'true' }}
       shell: bash
       working-directory: src/Storefront/Resources/app/storefront
       run: npm ci --no-audit --no-fund --prefer-offline
 
     # TODO: install deps for all bundles
     - name: Install extension storefront deps
-      if: ${{ inputs.install-storefront }}
+      if: ${{ inputs.install-storefront == 'true' }}
       shell: bash
       run: |
         if [[ -r "custom/plugins/${{ inputs.extensionName }}/src/Resources/app/storefront/package.json" ]]; then
@@ -301,12 +301,12 @@ runs:
         fi
 
     - name: Prepare Jest environment
-      if: ${{ inputs.install && inputs.install-admin }}
+      if: ${{ inputs.install == 'true' && inputs.install-admin == 'true' }}
       shell: bash
       working-directory: src/Administration/Resources/app/administration
       run: npm run unit-setup --if-present
 
     - name: Entity schema
-      if: ${{ inputs.install && inputs.install-admin }}
+      if: ${{ inputs.install == 'true' && inputs.install-admin == 'true' }}
       shell: bash
       run: composer admin:generate-entity-schema-types
