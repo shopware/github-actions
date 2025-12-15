@@ -12,6 +12,9 @@ inputs:
   cacheDir:
     description: PHPStan cache dir
     default: ${{ github.workspace }}/var/phpstan
+  errorFormat:
+    description: "PHPStan error format"
+    default: "github"
 
 runs:
   using: "composite"
@@ -34,4 +37,4 @@ runs:
     - name: Run PHPStan
       shell: bash
       working-directory: custom/plugins/${{ inputs.extensionName }}
-      run: ${GITHUB_WORKSPACE}/vendor/bin/phpstan analyze --error-format=github --no-progress
+      run: ${GITHUB_WORKSPACE}/vendor/bin/phpstan analyze --error-format=${{ inputs.errorFormat }}  --no-progress
