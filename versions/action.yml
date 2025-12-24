@@ -23,6 +23,9 @@ outputs:
   next-minor:
     description: The next minor version
     value: ${{ steps.get-versions.outputs.NEXT_MINOR }}
+  previous-minor:
+    description: The next minor version
+    value: ${{ steps.get-versions.outputs.PREV_MINOR }}
   next-patch:
     description: The next patch version
     value: ${{ steps.get-versions.outputs.NEXT_PATCH }}
@@ -36,7 +39,6 @@ outputs:
   lts-next-patch:
     description: The next patch version of the lts major
     value: ${{ steps.get-versions.outputs.NEXT_LTS_PATCH }}
-
 
 runs:
   using: "composite"

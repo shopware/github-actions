@@ -17,7 +17,7 @@ get_tags_without_rc() {
         cut --delimiter='/' --fields=3 | grep -v -i -E 'rc'
 }
 
-get_next_minor_and_patch() {
+get_next_and_prev_minor_and_patch() {
     DAY_OF_WEEK=$(date --utc +%u) # 1=Monday, 7=Sunday
     DAY_NEXT_MONDAY=$(date --utc --date="+$((8 - ${DAY_OF_WEEK})) days" +%d)
 
@@ -29,8 +29,10 @@ get_next_minor_and_patch() {
     IFS='.' read -r -a parts <<<"${max_tag}"
     if [ "$DAY_NEXT_MONDAY" -lt 7 ]; then
         echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 2)).0"
+        echo "PREV_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]})).0"
     else
         echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 1)).0"
+        echo "PREV_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} - 1)).0"
     fi
     echo "NEXT_PATCH=${parts[0]}.${parts[1]}.${parts[2]}.$((${parts[3]} + 1))"
 
@@ -61,4 +63,4 @@ print_min_max_tag() {
 
 print_min_max_tag PREV_MAJOR "$PREV_MAJOR"
 print_min_max_tag CUR_MAJOR "$CUR_MAJOR"
-get_next_minor_and_patch "${CUR_MAJOR}"
+get_next_and_prev_minor_and_patch "${CUR_MAJOR}"
