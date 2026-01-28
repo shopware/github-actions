@@ -1,0 +1,52 @@
+name: "Project Deployer"
+description: "Builds and deploys a Shopware project using shopware-cli and deployer"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "upload"
+
+inputs:
+  phpVersion:
+    description: "PHP version to use"
+    required: false
+    default: "8.4"
+  sshPrivateKey:
+    description: "SSH private key for deployment (use secrets.SSH_PRIVATE_KEY)"
+    required: true
+  deployCommand:
+    description: "Deploy command to run"
+    required: false
+    default: "deploy"
+  path:
+    description: "Path to the project"
+    required: false
+    default: "."
+  skipCheckout:
+    description: "Skip the checkout step"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      if: inputs.skipCheckout != 'true'
+      uses: actions/checkout@v6
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.phpVersion }}
+
+    - name: Install Shopware CLI
+      uses: shopware/shopware-cli-action@v3
+
+    - name: Build
+      shell: bash
+      run: shopware-cli project ci ${{ inputs.path }}
+
+    - name: Deploy
+      uses: deployphp/action@v1
+      with:
+        dep: ${{ inputs.deployCommand }}
+        private-key: ${{ inputs.sshPrivateKey }}
