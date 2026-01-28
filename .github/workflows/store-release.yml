@@ -54,7 +54,7 @@ jobs:
           shopware-cli extension zip --git-commit ${{ github.sha }} "${{ inputs.path }}" --release
           mv ${{ inputs.extensionName }}-${{ github.sha }}.zip ${{ inputs.extensionName }}.zip
       - name: Upload Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.extensionName }}
           path: ${{ inputs.extensionName }}.zip
