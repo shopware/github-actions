@@ -1,0 +1,46 @@
+name: "Project Validate"
+description: "Validates a Shopware project code style and structure"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "check-circle"
+
+inputs:
+  phpVersion:
+    description: "PHP version to use"
+    required: false
+    default: "8.4"
+  path:
+    description: "Path to the project"
+    required: false
+    default: "."
+  skipCheckout:
+    description: "Skip the checkout step"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      if: inputs.skipCheckout != 'true'
+      uses: actions/checkout@v6
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.phpVersion }}
+
+    - name: Install Shopware CLI
+      uses: shopware/shopware-cli-action@v3
+
+    - name: Install dependencies
+      uses: ramsey/composer-install@v3
+
+    - name: Validate Project
+      shell: bash
+      run: shopware-cli project validate ${{ inputs.path }}
+
+    - name: Check Code Style
+      shell: bash
+      run: shopware-cli project format --dry-run ${{ inputs.path }}
