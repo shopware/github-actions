@@ -68,10 +68,19 @@ jobs:
         - name: Build project
           run: shopware-cli project ci .
 
+        - name: Sanitize repository name
+          id: sanitize
+          run: |
+            echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+            echo "repo=${GITHUB_REPOSITORY_NAME,,}" >> $GITHUB_OUTPUT
+          env:
+            GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+            GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+
         - name: Build and push
           uses: docker/build-push-action@v6
           with:
             context: .
             file: ./docker/Dockerfile
             push: true
-            tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
+            tags: ghcr.io/${{ steps.sanitize.outputs.owner }}/${{ steps.sanitize.outputs.repo }}:latest
