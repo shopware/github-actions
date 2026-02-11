@@ -92,6 +92,7 @@ runs:
             "upstream": {
               "id": "${{ github.run_id }}",
               "ref": "${{ github.head_ref || github.ref }}",
+              "base_ref": "${{ github.base_ref }}",
               "repo": "${{ github.repository }}",
               "github-token": "${{ github.token }}",
               "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

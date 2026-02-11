@@ -105,17 +105,22 @@ else
                 version="${remote_ref#"refs/heads/"}"
                 echo "✓ Found matching next major: ${version}"
             else
-                echo "✗ No matching branch found, using fallback: ${FALLBACK}"
-                # Use fallback
-                version="${FALLBACK}"
+                echo "✗ No matching branch found, checking fallback: ${FALLBACK}"
+
+                fallback_ref=$(git ls-remote --heads "${REPO}" "${FALLBACK}" | cut -f 2)
+                if [[ -n "${fallback_ref}" ]]; then
+                    # Use fallback
+                    version="${FALLBACK}"
+                    echo "✓ Found matching fallback: ${FALLBACK}"
+                fi
             fi
         fi
     fi
 fi
 
 if [[ -z "$version" ]]; then
-    echo "$REF not found in ${REPO}, using fallback "
-    version="${FALLBACK}"
+    echo "$REF not found in ${REPO}, using hard-coded fallback = trunk"
+    version="trunk"
 fi
 
 echo "Matching shopware version: $version"

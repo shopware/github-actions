@@ -204,7 +204,8 @@ runs:
         DEPS: ${{ inputs.dependencies }}
         REF: ${{ inputs.shopwareVersion }}
         HEAD_REF: ${{ github.head_ref }}
-        BASE_REF: ${{ github.base_ref }}
+        # if base ref is not set we run in downstream and use the current ref as fallback
+        BASE_REF: ${{ github.base_ref || github.ref }}
         FALLBACK: ${{ inputs.shopwareVersionFallback }}
       run: |
         for dep in $(echo "$DEPS" | envsubst | jq -c '.[]'); do
