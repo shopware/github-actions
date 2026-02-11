@@ -112,6 +112,7 @@ else
                     # Use fallback
                     version="${FALLBACK}"
                     echo "✓ Found matching fallback: ${FALLBACK}"
+                fi
             fi
         fi
     fi
