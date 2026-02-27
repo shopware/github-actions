@@ -31,11 +31,11 @@ runs:
     - name: Trigger preview environment
       uses: shopware/github-actions/downstream@main
       env:
-          NEW_LOGIC: 1
+        NEW_LOGIC: 1
       with:
         repo: shopware/saas
         workflow: "preview-environment.yml"
-        ref: ".auto"
+        ref: "ci/migrate-preview-environments-to-v2"
         refFallback: ${{ inputs.refFallback }}
         timeout: 60m
         token: ${{ inputs.token || steps.octo-sts.outputs.token }}
