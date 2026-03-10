@@ -25,6 +25,7 @@ A collection of reusable GitHub Actions and Workflows for Shopware extensions an
 
 | Action | Description | Link |
 |--------|-------------|------|
+| [ai-release-notes](ai-release-notes/) | Generates AI-powered release notes and creates a draft GitHub release | [README](ai-release-notes/README.md) |
 | [build-zip](build-zip/) | Builds the extension zip and validates it | [README](build-zip/README.md) |
 | [store-release](store-release/) | Builds the extension and uploads it to the Shopware Store | [README](store-release/README.md) |
 

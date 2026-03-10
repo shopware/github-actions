@@ -1,0 +1,238 @@
+name: "AI Release Notes"
+description: "Generate AI-powered release notes from GitHub's auto-generated changelog and create a draft GitHub release"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "file-text"
+
+inputs:
+  product-name:
+    description: "Product name used in the AI prompt (e.g. 'Nexus Workflow Builder')"
+    required: true
+  product-description:
+    description: "Optional product context for better AI output"
+    required: false
+    default: ""
+  bold-features:
+    description: "Use bold formatting for feature names in bullets"
+    required: false
+    default: "true"
+  include-pr-links:
+    description: "Include PR links in the release notes bullets"
+    required: false
+    default: "false"
+  include-authors:
+    description: "Include author attributions in the release notes bullets"
+    required: false
+    default: "false"
+  sections:
+    description: "Comma-separated list of sections in desired order"
+    required: false
+    default: "New Features,Improvements,Bug Fixes,Other"
+  collapse-types:
+    description: "Change types to collapse under the last section (comma-separated)"
+    required: false
+    default: "dependency,translation,CI"
+  additional-rules:
+    description: "Extra rules appended to the default system prompt"
+    required: false
+    default: ""
+  custom-prompt:
+    description: "Completely override the default system prompt (ignores all formatting inputs)"
+    required: false
+    default: ""
+  model:
+    description: "GitHub Models API model name"
+    required: false
+    default: "gpt-4o"
+  temperature:
+    description: "AI model temperature (0.0 = deterministic, 1.0 = creative)"
+    required: false
+    default: "0.4"
+  draft:
+    description: "Create the release as a draft"
+    required: false
+    default: "true"
+  prerelease:
+    description: "Mark the release as a prerelease"
+    required: false
+    default: "false"
+  create-release:
+    description: "Whether to create a GitHub release (set to false to only generate notes)"
+    required: false
+    default: "true"
+  github-token:
+    description: "GitHub token with models:read and contents:write permissions"
+    required: false
+    default: "${{ github.token }}"
+
+outputs:
+  release-notes:
+    description: "The AI-generated release notes (Markdown)"
+    value: "${{ steps.ai-notes.outputs.notes }}"
+  raw-notes:
+    description: "The raw GitHub-generated changelog before AI rewrite"
+    value: "${{ steps.raw-notes.outputs.body }}"
+  release-url:
+    description: "URL of the created GitHub release (empty if create-release is false)"
+    value: "${{ steps.create-release.outputs.url }}"
+  previous-tag:
+    description: "The detected previous git tag"
+    value: "${{ steps.prev-tag.outputs.prev_tag }}"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Determine previous tag
+      id: prev-tag
+      shell: bash
+      run: |
+        CURRENT_TAG="${GITHUB_REF_NAME}"
+        PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v' | grep -v "^${CURRENT_TAG}$" | head -n 1)
+
+        if [[ -z "$PREV_TAG" ]]; then
+          echo "No previous tag found — this is the first release."
+          echo "prev_tag=" >> "$GITHUB_OUTPUT"
+        else
+          echo "prev_tag=$PREV_TAG" >> "$GITHUB_OUTPUT"
+        fi
+
+        echo "Current tag: $CURRENT_TAG"
+        echo "Previous tag: ${PREV_TAG:-none}"
+
+    - name: Generate raw release notes via GitHub API
+      id: raw-notes
+      uses: actions/github-script@v8
+      with:
+        github-token: "${{ inputs.github-token }}"
+        script: |
+          const currentTag = process.env.GITHUB_REF_NAME;
+          const prevTag = '${{ steps.prev-tag.outputs.prev_tag }}';
+
+          const params = {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: currentTag,
+          };
+
+          if (prevTag) {
+            params.previous_tag_name = prevTag;
+          }
+
+          const { data } = await github.rest.repos.generateReleaseNotes(params);
+
+          core.setOutput('body', data.body);
+          core.setOutput('name', data.name);
+
+    - name: Rewrite release notes with AI
+      id: ai-notes
+      uses: actions/github-script@v8
+      env:
+        GITHUB_TOKEN: "${{ inputs.github-token }}"
+        RAW_NOTES: "${{ steps.raw-notes.outputs.body }}"
+      with:
+        script: |
+          const currentTag = process.env.GITHUB_REF_NAME;
+          const rawNotes = process.env.RAW_NOTES;
+
+          const customPrompt = `${{ inputs.custom-prompt }}`;
+          let systemPrompt;
+
+          if (customPrompt) {
+            systemPrompt = customPrompt;
+          } else {
+            const productName = `${{ inputs.product-name }}`;
+            const productDesc = `${{ inputs.product-description }}`;
+            const sections = `${{ inputs.sections }}`;
+            const collapseTypes = `${{ inputs.collapse-types }}`;
+            const boldFeatures = `${{ inputs.bold-features }}` === 'true';
+            const includePrLinks = `${{ inputs.include-pr-links }}` === 'true';
+            const includeAuthors = `${{ inputs.include-authors }}` === 'true';
+            const additionalRules = `${{ inputs.additional-rules }}`;
+            const lastSection = sections.split(',').pop().trim();
+
+            systemPrompt = `You are a release-notes editor for a SaaS product called ${productName}.`;
+
+            if (productDesc) {
+              systemPrompt += `\nProduct context: ${productDesc}`;
+            }
+
+            systemPrompt += `
+          You receive the auto-generated GitHub "What's Changed" list and rewrite it into polished,
+          user-friendly release notes grouped by category.
+
+          Rules:
+          - Use these sections (omit any that have no items): ${sections}.
+          - Each bullet should be concise but descriptive — translate commit-speak into product language.
+          - Collapse ${collapseTypes} changes into a single bullet each under "${lastSection}".`;
+
+            if (boldFeatures) {
+              systemPrompt += `\n- Use **bold** for feature names in bullets.`;
+            }
+            if (!includePrLinks) {
+              systemPrompt += `\n- Do NOT include PR links or PR numbers in the bullets.`;
+            }
+            if (!includeAuthors) {
+              systemPrompt += `\n- Do NOT include author attributions in the bullets.`;
+            }
+
+            systemPrompt += `
+          - Keep the "Full Changelog" comparison link at the bottom exactly as provided.
+          - Start with a heading: ## Release Notes — ${currentTag}
+          - Output clean Markdown, nothing else.`;
+
+            if (additionalRules) {
+              systemPrompt += `\n\nAdditional rules:\n${additionalRules}`;
+            }
+          }
+
+          const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+            },
+            body: JSON.stringify({
+              model: '${{ inputs.model }}',
+              temperature: parseFloat('${{ inputs.temperature }}'),
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: `Rewrite these auto-generated release notes:\n\n${rawNotes}` },
+              ],
+            }),
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.text();
+            core.setFailed(`GitHub Models API error (${response.status}): ${errorBody}`);
+            return;
+          }
+
+          const result = await response.json();
+          const aiNotes = result.choices[0].message.content;
+
+          core.setOutput('notes', aiNotes);
+
+    - name: Create GitHub release
+      id: create-release
+      if: inputs.create-release == 'true'
+      uses: actions/github-script@v8
+      env:
+        AI_NOTES: "${{ steps.ai-notes.outputs.notes }}"
+      with:
+        github-token: "${{ inputs.github-token }}"
+        script: |
+          const tag = process.env.GITHUB_REF_NAME;
+
+          const release = await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: tag,
+            name: `Release ${tag}`,
+            body: process.env.AI_NOTES,
+            draft: ${{ inputs.draft }},
+            prerelease: ${{ inputs.prerelease }},
+          });
+
+          core.setOutput('url', release.data.html_url);
+          core.notice(`Release created: ${release.data.html_url}`);
