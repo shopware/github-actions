@@ -54,6 +54,8 @@ Override formatting, sections, and release settings.
           bold-features: "false"
           sections: "Breaking Changes,New Features,Improvements,Bug Fixes,Internal"
           collapse-types: "dependency,CI,refactor"
+          tag-pattern: "^v"
+          release-name: "{tag}"
           draft: "false"
 ```
 
@@ -87,6 +89,8 @@ Use the action as a pure notes generator — for example to post to Slack or app
 | `custom-prompt` | no | `""` | Completely override the system prompt (ignores all formatting inputs) |
 | `model` | no | `"gpt-4o"` | GitHub Models API model name |
 | `temperature` | no | `"0.4"` | AI temperature (`0.0` = deterministic, `1.0` = creative) |
+| `tag-pattern` | no | `"^v"` | Regex pattern to match tags when detecting the previous release |
+| `release-name` | no | `"Release {tag}"` | Release name template — use `{tag}` as placeholder for the tag name |
 | `draft` | no | `"true"` | Create the release as a draft |
 | `prerelease` | no | `"false"` | Mark the release as a prerelease |
 | `create-release` | no | `"true"` | Whether to create a GitHub release (`"false"` = only generate notes) |
