@@ -247,7 +247,7 @@ runs:
     - name: Install extension with Composer
       if: ${{ env.IS_PLUGIN == 'true' }}
       shell: bash
-      run: composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name)
+      run: composer require $(composer -d custom/plugins/${{ inputs.extensionName }} config name) --with-dependencies
 
     - name: Refresh Plugins
       if: ${{ inputs.install == 'true' && env.IS_PLUGIN == 'true' }}
