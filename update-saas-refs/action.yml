@@ -1,0 +1,40 @@
+name: update-saas-refs
+description: "Update upstream refs referenced in release/deployment branches"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "download"
+
+inputs:
+  target-branch:
+    required: false
+    default: ${{ github.base_ref }}
+    description: Deployment branch to update, e.g. 6.7.8.x
+
+runs:
+  using: "composite"
+  steps:
+        - uses: shopware/octo-sts-action@main
+          id: sts
+          with:
+            scope: shopware/saas
+            identity: SaaSCoreUpdate
+        - name: Check target branch exists in saas repo
+          id: check_branch
+          shell: bash
+          env:
+            GH_TOKEN: ${{ steps.sts.outputs.token }}
+          run: |
+            if gh api repos/shopware/saas/branches/"${{ inputs.target-branch }}" >/dev/null 2>&1; then
+              echo "branch_exists=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "branch_exists=false" >> "$GITHUB_OUTPUT"
+            fi
+        - name: Trigger saas saas core-update
+          shell: bash
+          if: ${{ steps.check_branch.outputs.branch_exists == 'true' }}
+          env:
+            ASSIGNEE: ${{ github.event.pull_request.assignee.login || github.event.pull_request.user.login }}
+            GH_TOKEN: ${{ steps.sts.outputs.token }}
+          run: |
+            gh workflow run "core-update.yml" --repo "shopware/saas" --ref "${{ inputs.target-branch }}" -f upstream-assignee="$ASSIGNEE"
