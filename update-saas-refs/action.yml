@@ -10,6 +10,9 @@ inputs:
     required: false
     default: ${{ github.base_ref }}
     description: Deployment branch to update, e.g. 6.7.8.x
+  upstream-pr:
+    description: "Link to the upstream PR that triggered the dependency update, leave empty when it's a regular triggered update"
+    required: false
 
 runs:
   using: "composite"
@@ -37,4 +40,4 @@ runs:
             ASSIGNEE: ${{ github.event.pull_request.assignee.login || github.event.pull_request.user.login }}
             GH_TOKEN: ${{ steps.sts.outputs.token }}
           run: |
-            gh workflow run "core-update.yml" --repo "shopware/saas" --ref "${{ inputs.target-branch }}" -f upstream-assignee="$ASSIGNEE"
+            gh workflow run "core-update.yml" --repo "shopware/saas" --ref "${{ inputs.target-branch }}" -f upstream-assignee="$ASSIGNEE" -f upstream-pr="${{ inputs.upstream-pr }}"
