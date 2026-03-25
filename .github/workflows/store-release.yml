@@ -27,9 +27,9 @@ on:
         default: ""
 
     secrets:
-      accountUser:
+      clientId:
         required: true
-      accountPassword:
+      clientSecret:
         required: true
       ghToken:
         required: true
@@ -74,8 +74,8 @@ jobs:
         run: shopware-cli account producer extension upload $(pwd)/${{ inputs.extensionName }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.ghToken }}
-          SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ secrets.accountUser }}
-          SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ secrets.accountPassword }}
+          SHOPWARE_CLI_ACCOUNT_CLIENT_ID: ${{ secrets.clientId }}
+          SHOPWARE_CLI_ACCOUNT_CLIENT_SECRET: ${{ secrets.clientSecret }}
       - name: Extract Changelog
         if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
         run: shopware-cli extension get-changelog $(pwd)/${{ inputs.extensionName }}.zip > /tmp/changelog.txt
