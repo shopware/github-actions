@@ -18,11 +18,17 @@ inputs:
     required: false
     default: "."
   accountUser:
-    description: "Your Shopware account user"
-    required: true
+    description: "Your Shopware account user (deprecated, use clientId/clientSecret instead)"
+    required: false
   accountPassword:
-    description: "Your Shopware account password"
-    required: true
+    description: "Your Shopware account password (deprecated, use clientId/clientSecret instead)"
+    required: false
+  clientId:
+    description: "Your Shopware account client ID for API authentication"
+    required: false
+  clientSecret:
+    description: "Your Shopware account client secret for API authentication"
+    required: false
   ghToken:
     description: "GitHub token"
     required: true
@@ -48,6 +54,11 @@ runs:
         skipCheckout: ${{ inputs.skipCheckout }}
         disableGit: ${{ inputs.disableGit }}
 
+    - name: Check for deprecated authentication
+      shell: bash
+      if: inputs.accountUser != ''
+      run: echo "::warning::The 'accountUser' and 'accountPassword' inputs are deprecated. Please use 'clientId' and 'clientSecret' instead. Generate credentials at https://account.shopware.com/producer/development"
+
     - name: Get version
       shell: bash
       run: |
@@ -69,6 +80,8 @@ runs:
         GITHUB_TOKEN: ${{ inputs.ghToken }}
         SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ inputs.accountUser }}
         SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ inputs.accountPassword }}
+        SHOPWARE_CLI_ACCOUNT_CLIENT_ID: ${{ inputs.clientId }}
+        SHOPWARE_CLI_ACCOUNT_CLIENT_SECRET: ${{ inputs.clientSecret }}
     - name: Update Extension Info
       shell: bash
       if: inputs.updateInfo == 'true'
@@ -77,6 +90,8 @@ runs:
         GITHUB_TOKEN: ${{ inputs.ghToken }}
         SHOPWARE_CLI_ACCOUNT_EMAIL: ${{ inputs.accountUser }}
         SHOPWARE_CLI_ACCOUNT_PASSWORD: ${{ inputs.accountPassword }}
+        SHOPWARE_CLI_ACCOUNT_CLIENT_ID: ${{ inputs.clientId }}
+        SHOPWARE_CLI_ACCOUNT_CLIENT_SECRET: ${{ inputs.clientSecret }}
     - name: Extract Changelog
       shell: bash
       if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == 'false'
