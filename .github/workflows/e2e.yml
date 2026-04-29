@@ -71,6 +71,7 @@ jobs:
           env: e2e
           install-storefront: true
           install-admin: true
+          allow-insecure-versions: true
       - name: Clone Extension
         uses: actions/checkout@v6
         with:
