@@ -68,23 +68,23 @@ runs:
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version: "20.x"
+        node-version: "24.x"
 
     - name: Install admin deps
       shell: bash
       if: ${{ inputs.forceInstallAdminDeps || contains(inputs.projectPath, 'administration') }}
-      run: npm ci --no-audit --no-fund --prefer-offline --prefix "src/Administration/Resources/app/administration"
+      run: npx npm@11.8.0 ci --no-audit --no-fund --prefer-offline --prefix "src/Administration/Resources/app/administration"
 
     - name: Install storefront deps
       shell: bash
       if: ${{ inputs.forceInstallStorefrontDeps || contains(inputs.projectPath, 'storefront') }}
-      run: npm ci --no-audit --no-fund --prefer-offline  --prefix "src/Storefront/Resources/app/storefront"
+      run: npx npm@11.8.0 ci --no-audit --no-fund --prefer-offline  --prefix "src/Storefront/Resources/app/storefront"
 
     - name: Install Plugin Dependencies
       shell: bash
-      run: npm install --no-audit --no-fund --prefer-offline --prefix "custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}"
+      run: npx npm@11.8.0 install --no-audit --no-fund --prefer-offline --prefix "custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}"
 
     - name: Run Lint command
       shell: bash
       working-directory: custom/plugins/${{ inputs.extensionName }}/${{ inputs.projectPath }}
-      run: npm run ${{ inputs.npmLintCmd }}
+      run: npx npm@11.8.0 run ${{ inputs.npmLintCmd }}
