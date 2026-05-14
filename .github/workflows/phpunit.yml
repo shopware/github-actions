@@ -79,6 +79,7 @@ jobs:
           mysql-version: ${{ inputs.mysqlVersion }}
           composer-root-version: ${{ inputs.composerRootVersion }}
           php-extensions: pcov
+          allow-insecure-versions: true
       - name: Clone Extension
         uses: actions/checkout@v6
         with:

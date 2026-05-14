@@ -59,6 +59,7 @@ jobs:
           php-version: 8.2
           env: prod
           install: "true"
+          allow-insecure-versions: true
       - name: Clone Extension
         uses: actions/checkout@v6
         with:
