@@ -71,7 +71,7 @@ jobs:
         id: version
         if: ${{ inputs.shopwareVersion == '.auto' || inputs.shopwareVersion == '' }}
       - name: Setup Shopware
-        uses: shopware/setup-shopware@main
+        uses: shopware/setup-shopware@v2
         with:
           shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
           shopware-repository: ${{ inputs.shopware-repository }}
@@ -109,7 +109,7 @@ jobs:
           fi
       - name: Upload Coverage
         if: inputs.uploadCoverage == true
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.codecovToken }}
         with:

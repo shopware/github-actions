@@ -124,7 +124,7 @@ runs:
       if: ${{ inputs.shopwareVersion == '.auto' || inputs.shopwareVersion == '' }}
 
     - name: Setup Shopware
-      uses: shopware/setup-shopware@main
+      uses: shopware/setup-shopware@v2
       with:
         shopware-version: ${{ steps.version.outputs.shopware-version || inputs.shopwareVersion }}
         shopware-repository: ${{ inputs.shopware-repository  || 'shopware/shopware' }}
@@ -144,7 +144,7 @@ runs:
 
     - name: Clone Extension
       if: ${{ ! inputs.extension-zip }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ inputs.extensionRef || github.ref }}
         path: custom/plugins/${{ inputs.extensionName }}
@@ -152,7 +152,7 @@ runs:
 
     - name: Download extension zip
       if: ${{ inputs.extension-zip }}
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: ${{ inputs.extension-zip }}
         path: custom/plugins/${{ inputs.extensionName }}
