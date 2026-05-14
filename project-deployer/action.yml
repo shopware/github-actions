@@ -42,8 +42,9 @@ runs:
       uses: shopware/shopware-cli-action@v3
 
     - name: Build
-      shell: bash
-      run: shopware-cli project ci ${{ inputs.path }}
+      uses: shopware/build-project-action@v1
+      with:
+        path: ${{ inputs.path }}
 
     - name: Deploy
       uses: deployphp/action@v1
