@@ -53,10 +53,10 @@ inputs:
 outputs:
   run_id:
     description: The run id of the downstream workflow
-    value: "${{ steps.wait.downstream_run_id }}"
+    value: "${{ steps.trigger.outputs.run_id }}"
   run_url:
     description: The api url of the downstream workflow
-    value: "${{ steps.wait.downstream_run_url }}"
+    value: "${{ steps.trigger.outputs.run_url }}"
 
 runs:
   using: "composite"
@@ -85,6 +85,7 @@ runs:
 
     - name: Trigger Downstream
       shell: bash
+      id: trigger
       env:
         GH_TOKEN: ${{ inputs.token || steps.sts.outputs.token }}
         UPSTREAM_DATA: |
@@ -102,12 +103,14 @@ runs:
         WORKFLOW: ${{ inputs.workflow }}
         REPO: ${{ inputs.repo }}
         REF: ${{ steps.version.outputs.shopware-version || inputs.ref }}
-      run: gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF" -f upstream_data="$UPSTREAM_DATA"
+      run: |
+        run_url=$(gh workflow run "$WORKFLOW" --repo "$REPO" --ref "$REF" -f upstream_data="$UPSTREAM_DATA")
+        echo "run_url=${run_url}" >> "$GITHUB_OUTPUT"
+        echo "run_id=$(basename "$run_url")" >> "$GITHUB_OUTPUT"
     - name: Wait for conclusion
       shell: bash
       id: wait
       env:
         GH_TOKEN: ${{ inputs.token || steps.sts.outputs.token }}
-        WORKFLOW: ${{ inputs.workflow }}
         REPO: ${{ inputs.repo }}
-      run: timeout "${{ inputs.timeout }}" ${GITHUB_ACTION_PATH}/wait.bash "$REPO" "$WORKFLOW" "${{ github.run_id }}" "${{ inputs.poll_interval }}"
+      run: timeout "${{ inputs.timeout }}" ${GITHUB_ACTION_PATH}/wait.bash "$REPO" "${{ inputs.poll_interval }}" "${{ steps.trigger.outputs.run_url }}"
