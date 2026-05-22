@@ -40,7 +40,7 @@ runs:
           # fetch all git entries for changelog generation
           fetch-depth: 0
     - name: Install shopware-cli
-      uses: shopware/shopware-cli-action@v1
+      uses: shopware/shopware-cli-action@v3
     - name: Build
       shell: bash
       run: shopware-cli extension zip "${{ inputs.path }}" ${{ (inputs.disableGit == 'false' && format('--git-commit {0}', github.sha)) || '--disable-git' }} --release
@@ -51,7 +51,7 @@ runs:
       shell: bash
       run: shopware-cli extension validate ${{ inputs.extensionName }}.zip
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       id: upload
       with:
         name: ${{ inputs.extensionName }}.zip

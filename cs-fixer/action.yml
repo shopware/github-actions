@@ -15,10 +15,10 @@ runs:
   using: "composite"
   steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup PHP
-      uses: shivammathur/setup-php@2.35.5
+      uses: shivammathur/setup-php@v2
       with:
         php-version: 8.2
         tools: php-cs-fixer:3.63.2, cs2pr
