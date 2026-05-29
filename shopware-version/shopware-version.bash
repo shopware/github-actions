@@ -52,10 +52,13 @@ echo "ref: ${REF}"
 get_base_ref "${ORIGINAL_REF}"
 echo "base ref: ${BASE_REF}"
 
-# if REPO does not start with https add https://github.com/
-if [[ "${REPO}" != https://* ]]; then
-    REPO="https://github.com/${REPO}"
-fi
+# Normalize REPO to owner/repo format for gh api
+REPO="${REPO#"https://github.com/"}"
+
+ref_exists() {
+    local branch="${1#"refs/heads/"}"
+    gh api "repos/${REPO}/git/refs/heads/${branch}" --silent >/dev/null 2>&1
+}
 
 # Algo for finding the matching branch in another repo
 # 1. if REF exists in target repo, use it
@@ -68,9 +71,8 @@ fi
 # to get the next major from a patch branch replace last two parts with x
 
 echo "Step 1: Checking if REF '${REF}' exists in target repo '${REPO}'"
-remote_ref=$(git ls-remote --heads "${REPO}" "${REF}" | cut -f 2)
-if [[ -n "${remote_ref}" ]]; then
-    version="${remote_ref#"refs/heads/"}"
+if ref_exists "${REF}"; then
+    version="${REF#"refs/heads/"}"
     echo "✓ Found matching REF: ${version}"
 else
     BASE_REF=${BASE_REF// /}
@@ -81,35 +83,29 @@ else
 
     echo "✗ REF not found, checking BASE_REF '${BASE_REF}'"
     # Check if BASE_REF exists in target repo
-    remote_ref=$(git ls-remote --heads "${REPO}" "${BASE_REF}" | cut -f 2)
-    if [[ -n "${remote_ref}" ]]; then
-        version="${remote_ref#"refs/heads/"}"
+    if ref_exists "${BASE_REF}"; then
+        version="${BASE_REF#"refs/heads/"}"
         echo "✓ Found matching BASE_REF: ${version}"
     else
         echo "✗ BASE_REF not found, checking next minor branch"
         # Check next minor branch (replace last digit with x)
         next_minor=$(echo "${BASE_REF}" | sed -E 's/[0-9]+$/x/')
         echo "  Checking next minor: ${next_minor}"
-        remote_ref=$(git ls-remote --heads "${REPO}" "${next_minor}" | cut -f 2)
-        if [[ -n "${remote_ref}" ]]; then
-            version="${remote_ref#"refs/heads/"}"
+        if ref_exists "${next_minor}"; then
+            version="${next_minor#"refs/heads/"}"
             echo "✓ Found matching next minor: ${version}"
         else
             echo "✗ Next minor not found, checking next major branch"
             # Check next major branch (replace last two digits with x)
             next_major=$(echo "${BASE_REF}" | sed -E 's/[0-9]+\.[0-9]+$/x/')
             echo "  Checking next major: ${next_major}"
-            remote_ref=$(git ls-remote --heads "${REPO}" "${next_major}" | cut -f 2)
-
-            if [[ -n "${remote_ref}" ]]; then
-                version="${remote_ref#"refs/heads/"}"
+            if ref_exists "${next_major}"; then
+                version="${next_major#"refs/heads/"}"
                 echo "✓ Found matching next major: ${version}"
             else
                 echo "✗ No matching branch found, checking fallback: ${FALLBACK}"
 
-                fallback_ref=$(git ls-remote --heads "${REPO}" "${FALLBACK}" | cut -f 2)
-                if [[ -n "${fallback_ref}" ]]; then
-                    # Use fallback
+                if ref_exists "${FALLBACK}"; then
                     version="${FALLBACK}"
                     echo "✓ Found matching fallback: ${FALLBACK}"
                 fi
