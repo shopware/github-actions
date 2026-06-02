@@ -82,6 +82,7 @@ runs:
       with:
         fallback: ${{ inputs.refFallback }}
         repo: ${{ inputs.repo }}
+        github-token: ${{ inputs.token || steps.sts.outputs.token }}
       id: version
       if: ${{ inputs.ref == '.auto' }}
 
