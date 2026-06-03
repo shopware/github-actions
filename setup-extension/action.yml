@@ -217,6 +217,7 @@ runs:
           if [ -n "${dep_token}" ]; then
             # if a custom token is provided use this token to clone
             git config --global "http.${dep_repo}/.extraheader" "AUTHORIZATION: basic $(echo -n "x-access-token:${dep_token}" | base64)"
+            export GH_TOKEN="${dep_token}"
           fi
 
           git clone "$dep_repo" "custom/plugins/$dep_name"
@@ -224,13 +225,14 @@ runs:
           if [ -n "${dep_branch}" ]; then
             if [ "${dep_branch}" = ".auto" ]; then
               echo "" >"$GITHUB_OUTPUT"
-              REPO="$(echo "${dep_repo}")" GH_TOKEN="$(echo "${dep_token}")" "${GITHUB_ACTION_PATH}/../shopware-version/shopware-version.bash"
+              REPO="$(echo "${dep_repo}")" "${GITHUB_ACTION_PATH}/../shopware-version/shopware-version.bash"
               dep_branch=$(cat "$GITHUB_OUTPUT" | grep "^shopware-version=" | cut -d'=' -f2)
             fi
             if [ "${dep_branch}" != "trunk" ]; then
               git -C custom/plugins/${dep_name} checkout ${dep_branch}
             fi
           fi
+          unset GH_TOKEN
         done
 
     - name: Install dependencies with Composer

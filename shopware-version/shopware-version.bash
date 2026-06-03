@@ -54,6 +54,7 @@ echo "base ref: ${BASE_REF}"
 
 # Normalize REPO to owner/repo format for gh api
 REPO="${REPO#"https://github.com/"}"
+REPO="${REPO%.git}"
 
 ref_exists() {
     local branch="${1#"refs/heads/"}"
@@ -122,4 +123,3 @@ fi
 echo "Matching shopware version: $version"
 
 echo "shopware-version=$version" >>"$GITHUB_OUTPUT"
-
