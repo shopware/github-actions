@@ -146,6 +146,7 @@ runs:
       if: ${{ ! inputs.extension-zip }}
       uses: actions/checkout@v6
       with:
+        persist-credentials: false
         ref: ${{ inputs.extensionRef || github.ref }}
         path: custom/plugins/${{ inputs.extensionName }}
         submodules: ${{ inputs.with-submodules == 'false' && false || 'recursive'  }}
