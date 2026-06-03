@@ -224,7 +224,7 @@ runs:
           if [ -n "${dep_branch}" ]; then
             if [ "${dep_branch}" = ".auto" ]; then
               echo "" >"$GITHUB_OUTPUT"
-              REPO="$(echo "${dep_repo}")" "${GITHUB_ACTION_PATH}/../shopware-version/shopware-version.bash"
+              REPO="$(echo "${dep_repo}")" GH_TOKEN="$(echo "${dep_token}")" "${GITHUB_ACTION_PATH}/../shopware-version/shopware-version.bash"
               dep_branch=$(cat "$GITHUB_OUTPUT" | grep "^shopware-version=" | cut -d'=' -f2)
             fi
             if [ "${dep_branch}" != "trunk" ]; then
