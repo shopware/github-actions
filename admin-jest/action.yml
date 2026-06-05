@@ -24,7 +24,7 @@ runs:
 
     - name: Upload Coverage
       if: inputs.uploadCoverage == true
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@v6.0.1
       with:
         root_dir: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}
         working-directory: ${{ github.workspace }}/custom/plugins/${{ inputs.extensionName }}

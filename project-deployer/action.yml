@@ -31,10 +31,10 @@ runs:
   steps:
     - name: Checkout
       if: inputs.skipCheckout != 'true'
-      uses: actions/checkout@v6
+      uses: actions/checkout@v6.0.3
 
     - name: Setup PHP
-      uses: shivammathur/setup-php@v2
+      uses: shivammathur/setup-php@2.37.1
       with:
         php-version: ${{ inputs.phpVersion }}
 
@@ -47,7 +47,7 @@ runs:
         path: ${{ inputs.path }}
 
     - name: Deploy
-      uses: deployphp/action@v1
+      uses: deployphp/action@v1.0.26
       with:
         dep: ${{ inputs.deployCommand }}
         private-key: ${{ inputs.sshPrivateKey }}

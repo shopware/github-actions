@@ -24,10 +24,10 @@ runs:
   steps:
     - name: Checkout
       if: inputs.skipCheckout != 'true'
-      uses: actions/checkout@v6
+      uses: actions/checkout@v6.0.3
 
     - name: Setup PHP
-      uses: shivammathur/setup-php@v2
+      uses: shivammathur/setup-php@2.37.1
       with:
         php-version: ${{ inputs.phpVersion }}
 
@@ -35,7 +35,7 @@ runs:
       uses: shopware/shopware-cli-action@v3
 
     - name: Install dependencies
-      uses: ramsey/composer-install@v4
+      uses: ramsey/composer-install@4.0.0
 
     - name: Validate Project
       shell: bash

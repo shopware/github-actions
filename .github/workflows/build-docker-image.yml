@@ -26,7 +26,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         - name: Checkout Repository
-          uses: actions/checkout@v6
+          uses: actions/checkout@v6.0.3
 
         - name: Login into Github Docker Registery
           run: echo "${{ secrets.ghToken }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -35,13 +35,13 @@ jobs:
           uses: shopware/shopware-cli-action@v3
 
         - name: Install Bun
-          uses: oven-sh/setup-bun@v2
+          uses: oven-sh/setup-bun@v2.2.0
           if: inputs.use-bun == true
           with:
             bun-version: ${{ inputs.bun-version }}
         
         - name: Setup PHP
-          uses: shivammathur/setup-php@v2
+          uses: shivammathur/setup-php@2.37.1
           with:
             php-version: '${{ inputs.php-version }}'
             extensions: ${{ inputs.php-extensions }}
@@ -53,7 +53,7 @@ jobs:
 
         - name: Cache Composer
           id: composer
-          uses: actions/cache@v5
+          uses: actions/cache@v5.0.5
           with:
             path: ${{ steps.composer-cache.outputs.dir }}
             key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -78,7 +78,7 @@ jobs:
             GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
 
         - name: Build and push
-          uses: docker/build-push-action@v7
+          uses: docker/build-push-action@v7.2.0
           with:
             context: .
             file: ./docker/Dockerfile

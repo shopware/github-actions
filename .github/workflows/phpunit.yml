@@ -81,7 +81,7 @@ jobs:
           php-extensions: pcov
           allow-insecure-versions: true
       - name: Clone Extension
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.3
         with:
           path: custom/plugins/${{ inputs.extensionName }}
       - name: Clone Dependencies
@@ -110,7 +110,7 @@ jobs:
           fi
       - name: Upload Coverage
         if: inputs.uploadCoverage == true
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v6.0.1
         env:
           CODECOV_TOKEN: ${{ secrets.codecovToken }}
         with:

@@ -144,7 +144,7 @@ runs:
 
     - name: Clone Extension
       if: ${{ ! inputs.extension-zip }}
-      uses: actions/checkout@v6
+      uses: actions/checkout@v6.0.3
       with:
         persist-credentials: false
         ref: ${{ inputs.extensionRef || github.ref }}
@@ -153,7 +153,7 @@ runs:
 
     - name: Download extension zip
       if: ${{ inputs.extension-zip }}
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@v8.0.1
       with:
         name: ${{ inputs.extension-zip }}
         path: custom/plugins/${{ inputs.extensionName }}

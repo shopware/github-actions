@@ -34,7 +34,7 @@ runs:
   using: "composite"
   steps:
     - name: Clone
-      uses: actions/checkout@v6
+      uses: actions/checkout@v6.0.3
       if: inputs.skipCheckout == 'false'
       with:
           # fetch all git entries for changelog generation
@@ -51,7 +51,7 @@ runs:
       shell: bash
       run: shopware-cli extension validate ${{ inputs.extensionName }}.zip
     - name: Upload artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.1
       id: upload
       with:
         name: ${{ inputs.extensionName }}.zip

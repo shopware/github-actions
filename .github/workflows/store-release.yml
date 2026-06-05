@@ -39,7 +39,7 @@ jobs:
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.3
         with:
           # fetch all git entries for changelog generation
           fetch-depth: 0
@@ -54,7 +54,7 @@ jobs:
           shopware-cli extension zip --git-commit ${{ github.sha }} "${{ inputs.path }}" --release
           mv ${{ inputs.extensionName }}-${{ github.sha }}.zip ${{ inputs.extensionName }}.zip
       - name: Upload Artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: ${{ inputs.extensionName }}
           path: ${{ inputs.extensionName }}.zip
@@ -97,7 +97,7 @@ jobs:
           git push origin ${EXTENSION_VERSION}
       - name: Create a GitHub release
         if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == false
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.21.0
         with:
           artifacts: /tmp/${{ inputs.extensionName }}.zip
           tag: ${{ env.EXTENSION_VERSION }}

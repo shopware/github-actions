@@ -116,7 +116,7 @@ runs:
         git push origin ${EXTENSION_VERSION}
     - name: Create a GitHub release
       if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == 'false'
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@v1.21.0
       with:
         artifacts: /tmp/${{ inputs.extensionName }}.zip
         tag: ${{ env.EXTENSION_VERSION }}
