@@ -64,7 +64,7 @@ runs:
       run: |
         echo "EXTENSION_VERSION=$(shopware-cli extension get-version .)" >> $GITHUB_ENV
     - name: Check Tag existence
-      uses: mukunku/tag-exists-action@v1.7.0
+      uses: mukunku/tag-exists-action@5c39604fe8aef7e65acb6fbcf96ec580f7680313 # v1.7.0
       id: checkTag
       with:
         tag: ${{ env.EXTENSION_VERSION }}
@@ -116,7 +116,7 @@ runs:
         git push origin ${EXTENSION_VERSION}
     - name: Create a GitHub release
       if: steps.checkTag.outputs.exists != 'true' && inputs.publishOnly == 'false'
-      uses: ncipollo/release-action@v1.21.0
+      uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
       with:
         artifacts: /tmp/${{ inputs.extensionName }}.zip
         tag: ${{ env.EXTENSION_VERSION }}

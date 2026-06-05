@@ -112,7 +112,7 @@ runs:
 
     - name: Generate raw release notes via GitHub API
       id: raw-notes
-      uses: actions/github-script@v9.0.0
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         INPUT_PREV_TAG: "${{ steps.prev-tag.outputs.prev_tag }}"
       with:
@@ -138,7 +138,7 @@ runs:
 
     - name: Rewrite release notes with AI
       id: ai-notes
-      uses: actions/github-script@v9.0.0
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         GITHUB_TOKEN: "${{ inputs.github-token }}"
         RAW_NOTES: "${{ steps.raw-notes.outputs.body }}"
@@ -251,7 +251,7 @@ runs:
     - name: Create GitHub release
       id: create-release
       if: inputs.create-release == 'true'
-      uses: actions/github-script@v9.0.0
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         AI_NOTES: "${{ steps.ai-notes.outputs.notes }}"
         INPUT_RELEASE_NAME: "${{ inputs.release-name }}"
