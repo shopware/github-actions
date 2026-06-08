@@ -142,6 +142,14 @@ runs:
         allow-insecure-versions: ${{ inputs.allow-insecure-versions }}
         env: ${{ inputs.env }}
 
+    - name: Install symfony-cli
+      shell: bash
+      run: |
+        if ! command -v symfony &> /dev/null; then
+          curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | sudo -E bash
+          sudo apt-get install -y symfony-cli
+        fi
+
     - name: Clone Extension
       if: ${{ ! inputs.extension-zip }}
       uses: actions/checkout@v6
