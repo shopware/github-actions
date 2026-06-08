@@ -67,7 +67,7 @@ jobs:
 
       - name: Upload Coverage
         if: inputs.uploadCoverage == true
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.codecovToken }}
         with:
