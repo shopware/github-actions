@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if ! gh auth status &>/dev/null; then
+    echo "::error::gh is not authenticated. Set GH_TOKEN or GITHUB_TOKEN." >&2
+    exit 1
+fi
+
 PREV_MAJOR="${PREV_MAJOR:-"v6.6."}"
 CUR_MAJOR="${CUR_MAJOR:-"v6.7."}"
 

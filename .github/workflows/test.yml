@@ -97,8 +97,6 @@ jobs:
             - name: Get versions
               id: versions
               uses: ./versions
-              env:
-                GH_TOKEN: ${{ github.token }}
             - name: Print outputs
               run: |
                 echo "next-minor:     ${{ steps.versions.outputs.next-minor }}"
