@@ -2,12 +2,15 @@ name: Update pinned GitHub Action versions
 description: Check all GitHub Actions in the repository for updates and open a PR with each action pinned to the latest release's commit SHA.
 
 inputs:
-  token:
+  github-token:
     description: GitHub token with contents:write and pull-requests:write permissions
     required: true
   base-branch:
     description: Base branch for the pull request
     default: main
+  reviewers:
+    description: Comma-separated list of reviewers to request (users or org/team-slug, e.g. "octocat,shopware/product-operations")
+    required: false
 
 runs:
   using: composite
@@ -16,14 +19,14 @@ runs:
       id: check
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.github-token }}
       run: node "${{ github.action_path }}/update-actions.js"
 
     - name: Create or update pull request
       if: steps.check.outputs.changed == 'true'
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.token }}
+        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         BRANCH="chore/update-pinned-actions"
 
@@ -36,11 +39,21 @@ runs:
 
         EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
         if [[ -z "$EXISTING" ]]; then
+          REVIEWERS="${{ inputs.reviewers }}"
+          REVIEWER_FLAGS=""
+          if [[ -n "$REVIEWERS" ]]; then
+            IFS=',' read -ra LIST <<< "$REVIEWERS"
+            for R in "${LIST[@]}"; do
+              REVIEWER_FLAGS="$REVIEWER_FLAGS --reviewer ${R// /}"
+            done
+          fi
+
           gh pr create \
             --title "chore: update pinned GitHub Action versions" \
             --body "$(cat "${{ steps.check.outputs.pr_body_path }}")" \
             --head "$BRANCH" \
-            --base "${{ inputs.base-branch }}"
+            --base "${{ inputs.base-branch }}" \
+            $REVIEWER_FLAGS
         else
           echo "PR #$EXISTING already open — branch updated."
         fi

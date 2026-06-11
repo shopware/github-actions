@@ -15,12 +15,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shopware/github-actions/update-pinned-actions@main
         with:
-          token: ${{ github.token }}
+          github-token: ${{ github.token }}
 ```
 
 ## Inputs
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `token` | yes | — | GitHub token with `contents: write` and `pull-requests: write` |
+| `github-token` | yes | — | GitHub token with `contents: write` and `pull-requests: write` |
 | `base-branch` | no | `main` | Base branch for the pull request |
+| `reviewers` | no | — | Comma-separated reviewers to request (users or `org/team-slug`, e.g. `octocat,shopware/product-operations`) |

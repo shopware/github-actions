@@ -17,4 +17,5 @@ jobs:
 
       - uses: shopware/github-actions/update-pinned-actions@main
         with:
-          token: ${{ github.token }}
+          github-token: ${{ github.token }}
+          reviewers: shopware/product-operations
