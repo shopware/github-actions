@@ -1,0 +1,46 @@
+name: Update pinned GitHub Action versions
+description: Check all GitHub Actions in the repository for updates and open a PR with each action pinned to the latest release's commit SHA.
+
+inputs:
+  token:
+    description: GitHub token with contents:write and pull-requests:write permissions
+    required: true
+  base-branch:
+    description: Base branch for the pull request
+    default: main
+
+runs:
+  using: composite
+  steps:
+    - name: Check for updates
+      id: check
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: node "${{ github.action_path }}/update-actions.js"
+
+    - name: Create or update pull request
+      if: steps.check.outputs.changed == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        BRANCH="chore/update-pinned-actions"
+
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout -B "$BRANCH"
+        git add -A
+        git commit -m "chore: update pinned GitHub Action versions"
+        git push origin "$BRANCH" --force
+
+        EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+        if [[ -z "$EXISTING" ]]; then
+          gh pr create \
+            --title "chore: update pinned GitHub Action versions" \
+            --body "$(cat "${{ steps.check.outputs.pr_body_path }}")" \
+            --head "$BRANCH" \
+            --base "${{ inputs.base-branch }}"
+        else
+          echo "PR #$EXISTING already open — branch updated."
+        fi
