@@ -1,0 +1,9 @@
+name: Check pinned GitHub Action versions
+description: Fails if any non-Shopware GitHub Action is not pinned to a full commit SHA.
+
+runs:
+  using: composite
+  steps:
+    - name: Check for unpinned actions
+      shell: bash
+      run: node "${{ github.action_path }}/check-pinned-actions.js"

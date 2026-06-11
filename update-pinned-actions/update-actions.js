@@ -5,6 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
+const { ACTION_RE, findYamlFiles, isThirdParty } = require('../lib/action-utils');
 
 function ghApi(endpoint) {
     try {
@@ -34,33 +35,12 @@ function tagCommitSha(owner, repo, tag) {
     return sha;
 }
 
-function findYamlFiles(root = '.') {
-    const files = [];
-    function walk(dir) {
-        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-            if (entry.name === '.git') continue;
-            const full = path.join(dir, entry.name);
-            if (entry.isDirectory()) {
-                walk(full);
-            } else if (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml')) {
-                files.push(full);
-            }
-        }
-    }
-    walk(root);
-    return files.sort();
-}
-
-// Also captures the optional version comment: uses: owner/repo@<ref> # <tag>
-const ACTION_RE = /uses:\s+([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)@([a-zA-Z0-9._/-]+)(?:\s*#\s*(\S+))?/g;
-
 function collectActions(yamlFiles) {
     const actions = {};
     for (const file of yamlFiles) {
         const content = fs.readFileSync(file, 'utf8');
         for (const [, action, ref, commentTag] of content.matchAll(ACTION_RE)) {
-            const owner = action.split('/')[0];
-            if (owner === 'shopware' || owner.startsWith('.')) continue;
+            if (!isThirdParty(action)) continue;
             if (!actions[action]) {
                 actions[action] = { ref, currentTag: commentTag ?? null };
             }
