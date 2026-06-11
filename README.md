@@ -44,6 +44,13 @@ A collection of reusable GitHub Actions and Workflows for Shopware extensions an
 | [downstream](downstream/) | Triggers a downstream workflow and waits for it to finish | [README](downstream/README.md) |
 | [upstream-connect](upstream-connect/) | Connects to upstream from downstream run | [README](upstream-connect/README.md) |
 
+### Action Pinning
+
+| Action | Description | Link |
+|--------|-------------|------|
+| [check-pinned-actions](check-pinned-actions/) | Fails if any non-Shopware action is not pinned to a commit SHA — use as a PR gate | [README](check-pinned-actions/README.md) |
+| [update-pinned-actions](update-pinned-actions/) | Checks all actions for updates and opens a PR with each pinned to the latest release's commit SHA | [README](update-pinned-actions/README.md) |
+
 ### Deployment
 
 | Action | Description | Link |
