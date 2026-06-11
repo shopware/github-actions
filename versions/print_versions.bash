@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if ! gh auth status &>/dev/null; then
+    echo "::error::gh is not authenticated. Set GH_TOKEN or GITHUB_TOKEN." >&2
+    exit 1
+fi
+
 PREV_MAJOR="${PREV_MAJOR:-"v6.6."}"
 CUR_MAJOR="${CUR_MAJOR:-"v6.7."}"
 
@@ -18,16 +23,19 @@ get_tags_without_rc() {
 }
 
 get_next_minor_and_patch() {
-    DAY_OF_WEEK=$(date --utc +%u) # 1=Monday, 7=Sunday
-    DAY_NEXT_MONDAY=$(date --utc --date="+$((8 - ${DAY_OF_WEEK})) days" +%d)
-
     version=${1}
     local max_tag=$(get_tags_without_rc | grep -E "^${version}" | tail -n 1)
     if [[ -z $max_tag ]]; then
         max_tag=$(get_tags | grep -E "^${version}" | tail -n 1)
     fi
     IFS='.' read -r -a parts <<<"${max_tag}"
-    if [ "$DAY_NEXT_MONDAY" -lt 7 ]; then
+
+    local next_release_branch="${parts[0]#v}.${parts[1]}.$((${parts[2]} + 1)).x"
+    local gh_output gh_status
+    gh_output=$(gh api "repos/shopware/shopware/branches/${next_release_branch}" 2>&1)
+    gh_status=$?
+    if [ $gh_status -eq 0 ] || ! echo "$gh_output" | grep -q "HTTP 404"; then
+        # Branch exists, or the API call failed for an unknown reason — default to freeze.
         echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 2)).0"
     else
         echo "NEXT_MINOR=${parts[0]}.${parts[1]}.$((${parts[2]} + 1)).0"

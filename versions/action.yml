@@ -12,6 +12,9 @@ inputs:
   lts-major:
     description: LTS major prefix like v6.5.
     default: v6.6.
+  github-token:
+    description: Token used to check for release branches via the GitHub API
+    default: ${{ github.token }}
 
 outputs:
   first-version:
@@ -47,5 +50,6 @@ runs:
       env:
         CUR_MAJOR: ${{ inputs.major }}
         PREV_MAJOR: ${{ inputs.lts-major }}
+        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         ${GITHUB_ACTION_PATH}/print_versions.bash | tee >> "$GITHUB_OUTPUT"
