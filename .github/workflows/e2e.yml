@@ -73,7 +73,7 @@ jobs:
           install-admin: true
           allow-insecure-versions: true
       - name: Clone Extension
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           path: custom/plugins/${{ inputs.extensionName }}
       - name: Clone Dependencies
@@ -111,13 +111,13 @@ jobs:
           fi
       - name: Upload Playwright Artifacts
         if: ${{ inputs.e2eTestFramework == 'playwright' && failure() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playwright-screenshots
           path: custom/plugins/${{ inputs.extensionName }}/${{ inputs.e2ePath }}/test-results
       - name: Upload Cypress Artifacts
         if: ${{ inputs.e2eTestFramework == 'cypress' && failure() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cypress-screenshots
           path: custom/plugins/${{ inputs.extensionName }}/${{ inputs.e2ePath }}/cypress/screenshots
