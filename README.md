@@ -49,7 +49,6 @@ A collection of reusable GitHub Actions and Workflows for Shopware extensions an
 | Action | Description | Link |
 |--------|-------------|------|
 | [check-pinned-actions](check-pinned-actions/) | Fails if any non-Shopware action is not pinned to a commit SHA — use as a PR gate | [README](check-pinned-actions/README.md) |
-| [update-pinned-actions](update-pinned-actions/) | Checks all actions for updates and opens a PR with each pinned to the latest release's commit SHA | [README](update-pinned-actions/README.md) |
 
 ### Deployment
 

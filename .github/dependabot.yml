@@ -1,4 +1,6 @@
 version: 2
-updates: []
-# GitHub Actions updates are handled by .github/workflows/update-actions.yml
-# which pins each action to the release's commit SHA instead of a version tag.
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"

@@ -2,9 +2,28 @@
 'use strict';
 
 const fs = require('fs');
-const { ACTION_RE, findYamlFiles, isThirdParty } = require('../lib/action-utils');
+const path = require('path');
 
+const ACTION_RE = /uses:\s+([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)@([a-zA-Z0-9._/-]+)(?:\s*#\s*(\S+))?/g;
 const SHA_RE = /^[0-9a-f]{40}$/;
+
+function findYamlFiles(root = '.') {
+    const results = [];
+    for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+        const full = path.join(root, entry.name);
+        if (entry.isDirectory()) {
+            results.push(...findYamlFiles(full));
+        } else if (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml')) {
+            results.push(full);
+        }
+    }
+    return results;
+}
+
+function isThirdParty(action) {
+    const owner = action.split('/')[0];
+    return owner !== 'shopware' && !owner.startsWith('.');
+}
 
 function main() {
     const yamlFiles = findYamlFiles();
