@@ -10,6 +10,7 @@ trap on_sigterm SIGTERM
 
 on_sigterm() {
     if [[ "${CANCEL_REQUESTED}" == "1" ]]; then
+        # GitHub sent SIGTERM after accepting our cancellation request.
         echo "Upstream workflow cancellation is taking over."
         exit 130
     fi
@@ -37,6 +38,8 @@ cancel_upstream() {
 
     CANCEL_REQUESTED=1
 
+    # gh run cancel only requests cancellation. Keep this step alive so GitHub
+    # can mark the upstream run as cancelled instead of racing our own failure.
     while true; do
         sleep 60
     done
