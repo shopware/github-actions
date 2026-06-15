@@ -22,6 +22,7 @@ Trigger a downstream workflow in another repository and wait for it to finish.
 | `env` | Environment variables to pass to downstream workflow | No | - |
 | `identity` | Identity for octo-sts | No | `upstream` |
 | `token` | Token to authenticate (if not provided, octo-sts is used) | No | - |
+| `upstream-token` | Token used to cancel the upstream workflow run when the downstream run was cancelled | No | - |
 | `timeout` | Timeout for the downstream workflow | No | `30m` |
 | `poll_interval` | Poll interval for checking status | No | `2m` |
 

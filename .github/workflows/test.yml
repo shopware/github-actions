@@ -4,6 +4,14 @@ on:
   workflow_dispatch:
 
 jobs:
+    downstream-wait:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            - name: Test downstream wait
+              run: bash downstream/wait.test.bash
+
     shopware-version-fallback:
         runs-on: ubuntu-latest
         steps:

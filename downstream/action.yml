@@ -42,6 +42,10 @@ inputs:
     description: Token used to authenticate with the downstream repo. If not provided octo-sts is used
     required: false
     default: ""
+  upstream-token:
+    description: Token used to cancel the upstream workflow run when the downstream run was cancelled
+    required: false
+    default: ""
   timeout:
     description: Timeout for the downstream
     required: false
@@ -116,4 +120,7 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.token || steps.sts.outputs.token }}
         REPO: ${{ inputs.repo }}
+        UPSTREAM_TOKEN: ${{ inputs.upstream-token }}
+        UPSTREAM_REPOSITORY: ${{ github.repository }}
+        UPSTREAM_RUN_ID: ${{ github.run_id }}
       run: timeout "${{ inputs.timeout }}" ${GITHUB_ACTION_PATH}/wait.bash "$REPO" "${{ inputs.poll_interval }}" "${{ steps.trigger.outputs.run_url }}"
