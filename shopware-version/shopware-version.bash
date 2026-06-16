@@ -14,8 +14,7 @@ set pipefail
 get_ref() {
     PR_NR=$(echo "${1}" | sed -E -n "s|^(refs/heads/)?gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\2|p")
     if [[ -n "${PR_NR}" ]]; then
-        echo "Merge queue detected. Using PR_NR: ${PR_NR} to fetch REF"
-        REF="refs/heads/$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.headRefName' --json headRefName)"
+        echo "Merge queue detected. Using REF"
         return
     fi
 
@@ -35,7 +34,7 @@ get_base_ref() {
     PR_NR=$(echo "${1}" | sed -E -n "s|^(refs/heads/)?gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\2|p")
     if [[ -n "${PR_NR}" ]]; then
         echo "Merge queue detected. Using PR_NR: ${PR_NR} to fetch BASE_REF"
-        BASE_REF="$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.baseRefName' --json baseRefName)"
+        BASE_REF="$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.baseRefName' --json baseRefName || true)"
         return
     fi
 
