@@ -49,7 +49,7 @@ get_head_ref() {
     PR_NR=$(echo "${1}" | sed -E -n "s|^(refs/heads/)?gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\2|p")
     if [[ -n "${PR_NR}" ]]; then
         echo "Merge queue detected. Using PR_NR: ${PR_NR} to fetch HEAD_REF"
-        HEAD_REF="$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.headRefName' --json baseRefName || true)"
+        HEAD_REF="$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.headRefName' --json headRefName || true)"
         return
     fi
 
