@@ -45,11 +45,28 @@ get_base_ref() {
     fi
 }
 
+get_head_ref() {
+    PR_NR=$(echo "${1}" | sed -E -n "s|^(refs/heads/)?gh-readonly-queue/[^/]+/pr-([0-9]+)-.*$|\2|p")
+    if [[ -n "${PR_NR}" ]]; then
+        echo "Merge queue detected. Using PR_NR: ${PR_NR} to fetch HEAD_REF"
+        HEAD_REF="$(gh pr view --repo "${CURRENT_REPO}" "${PR_NR}" --jq '.headRefName' --json baseRefName || true)"
+        return
+    fi
+
+    #remove whitespace from HEAD_REF with bash substitution
+    HEAD_REF=${HEAD_REF// /}
+    if [[ -n "${HEAD_REF}" ]]; then
+        HEAD_REF="refs/heads/${HEAD_REF#"refs/heads/"}"
+    fi
+}
+
 ORIGINAL_REF=${REF}
 get_ref "${ORIGINAL_REF}"
 echo "ref: ${REF}"
 get_base_ref "${ORIGINAL_REF}"
 echo "base ref: ${BASE_REF}"
+get_head_ref "${ORIGINAL_REF}"
+echo "head ref: ${HEAD_REF}"
 
 # Normalize REPO to owner/repo format for gh api
 REPO="${REPO#"https://github.com/"}"
@@ -75,39 +92,51 @@ if ref_exists "${REF}"; then
     version="${REF#"refs/heads/"}"
     echo "✓ Found matching REF: ${version}"
 else
+    HEAD_REF=${HEAD_REF// /}
+    if [[ -z "${HEAD_REF}" ]]; then
+        echo "✗ HEAD_REF not set, using REF '${REF}'"
+        HEAD_REF="${REF}"
+    fi
+
     BASE_REF=${BASE_REF// /}
     if [[ -z "${BASE_REF}" ]]; then
         echo "✗ BASE_REF not set, using REF '${REF}'"
         BASE_REF="${REF}"
     fi
 
-    echo "✗ REF not found, checking BASE_REF '${BASE_REF}'"
-    # Check if BASE_REF exists in target repo
-    if ref_exists "${BASE_REF}"; then
-        version="${BASE_REF#"refs/heads/"}"
-        echo "✓ Found matching BASE_REF: ${version}"
+    echo "✗ REF not found, checking HEAD_REF '${HEAD_REF}'"
+    if ref_exists "${HEAD_REF}"; then
+        version="${HEAD_REF#"refs/heads/"}"
+        echo "✓ Found matching HEAD_REF: ${version}"
     else
-        echo "✗ BASE_REF not found, checking next minor branch"
-        # Check next minor branch (replace last digit with x)
-        next_minor=$(echo "${BASE_REF}" | sed -E 's/[0-9]+$/x/')
-        echo "  Checking next minor: ${next_minor}"
-        if ref_exists "${next_minor}"; then
-            version="${next_minor#"refs/heads/"}"
-            echo "✓ Found matching next minor: ${version}"
+        echo "✗ REF not found, checking BASE_REF '${BASE_REF}'"
+        # Check if BASE_REF exists in target repo
+        if ref_exists "${BASE_REF}"; then
+            version="${BASE_REF#"refs/heads/"}"
+            echo "✓ Found matching BASE_REF: ${version}"
         else
-            echo "✗ Next minor not found, checking next major branch"
-            # Check next major branch (replace last two digits with x)
-            next_major=$(echo "${BASE_REF}" | sed -E 's/[0-9]+\.[0-9]+$/x/')
-            echo "  Checking next major: ${next_major}"
-            if ref_exists "${next_major}"; then
-                version="${next_major#"refs/heads/"}"
-                echo "✓ Found matching next major: ${version}"
+            echo "✗ BASE_REF not found, checking next minor branch"
+            # Check next minor branch (replace last digit with x)
+            next_minor=$(echo "${BASE_REF}" | sed -E 's/[0-9]+$/x/')
+            echo "  Checking next minor: ${next_minor}"
+            if ref_exists "${next_minor}"; then
+                version="${next_minor#"refs/heads/"}"
+                echo "✓ Found matching next minor: ${version}"
             else
-                echo "✗ No matching branch found, checking fallback: ${FALLBACK}"
+                echo "✗ Next minor not found, checking next major branch"
+                # Check next major branch (replace last two digits with x)
+                next_major=$(echo "${BASE_REF}" | sed -E 's/[0-9]+\.[0-9]+$/x/')
+                echo "  Checking next major: ${next_major}"
+                if ref_exists "${next_major}"; then
+                    version="${next_major#"refs/heads/"}"
+                    echo "✓ Found matching next major: ${version}"
+                else
+                    echo "✗ No matching branch found, checking fallback: ${FALLBACK}"
 
-                if ref_exists "${FALLBACK}"; then
-                    version="${FALLBACK}"
-                    echo "✓ Found matching fallback: ${FALLBACK}"
+                    if ref_exists "${FALLBACK}"; then
+                        version="${FALLBACK}"
+                        echo "✓ Found matching fallback: ${FALLBACK}"
+                    fi
                 fi
             fi
         fi
