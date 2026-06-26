@@ -35,6 +35,7 @@ A collection of reusable GitHub Actions and Workflows for Shopware extensions an
 |--------|-------------|------|
 | [setup-extension](setup-extension/) | Checkouts Shopware and extension, installs dependencies | [README](setup-extension/README.md) |
 | [shopware-version](shopware-version/) | Gets the Shopware version that matches the current branch | [README](shopware-version/README.md) |
+| [npm-ci-retry](npm-ci-retry/) | Runs npm install commands with retry handling | [README](npm-ci-retry/README.md) |
 | [versions](versions/) | Gets version information for current and LTS major versions | [README](versions/README.md) |
 
 ### Workflow Orchestration
