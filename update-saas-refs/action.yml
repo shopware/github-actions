@@ -9,7 +9,7 @@ inputs:
   pull_request:
     required: true
     default: ${{ github.event.pull_request }}
-    description: The pull request that triggered the update, e.g. ${{ github.event.pull_request }}
+    description: The pull request that triggered the update
   target-branch:
     required: false
     default: ${{ github.base_ref }}
