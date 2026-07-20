@@ -9,16 +9,17 @@ actually installed on that version.
 
 ## What it does
 
-1. `plugin:refresh`, then `plugin:install --activate` — boots the container, so a plugin that does not compile against the installed Shopware release fails here
-2. `dal:validate` — validates every registered definition and its associations against the real database schema
-3. `plugin:uninstall`, then asserts the configured tables are gone (clean uninstall)
-4. `plugin:install --activate` again, asserts the configured tables are back, and re-runs `dal:validate` (working reinstall)
+1. `dal:validate` — validates every registered definition and its associations against the real database schema
+2. `plugin:uninstall`, then asserts the configured tables are gone (clean uninstall)
+3. `plugin:install --activate`, asserts the configured tables are back, and re-runs `dal:validate` (working reinstall)
 
-It expects Shopware to be installed already (e.g. via
-[`setup-extension`](../setup-extension/) with `install: true`) and reads the
-database connection from the `DATABASE_URL` environment variable that Shopware
-exposes in CI. It is meant for plugins; apps have no install lifecycle of this
-kind.
+Run it after [`setup-extension`](../setup-extension/) with **`install: true`**,
+which installs and activates the plugin (and thereby already gates the
+container-compile / "does it install on this release" failure from
+shopware/shopware#18086). This action then validates the DAL wiring and the
+uninstall → reinstall round-trip on top. It reads the database connection from
+the `DATABASE_URL` environment variable that Shopware exposes in CI. It is meant
+for plugins; apps have no install lifecycle of this kind.
 
 ## Inputs
 

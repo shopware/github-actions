@@ -21,17 +21,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # install + activate boots the container, so a plugin that does not compile
-    # against the installed Shopware release fails here. dal:validate then checks
-    # every definition and its associations against the real schema.
-    - name: Refresh, install & validate DAL
+    # setup-extension (install: true) has already installed and activated the
+    # plugin, so start by validating: dal:validate checks every definition and its
+    # associations against the real schema, catching entity/extension wiring
+    # broken on the target version.
+    - name: Validate DAL
       shell: bash
-      env:
-        EXTENSION_NAME: ${{ inputs.extensionName }}
-      run: |
-        php "${GITHUB_WORKSPACE}/bin/console" plugin:refresh
-        php "${GITHUB_WORKSPACE}/bin/console" plugin:install --activate --clearCache "${EXTENSION_NAME}"
-        php "${GITHUB_WORKSPACE}/bin/console" dal:validate
+      run: php "${GITHUB_WORKSPACE}/bin/console" dal:validate
 
     # uninstall drops the plugin's tables; assert they are actually gone (a leaked
     # table means uninstall is not clean). Done as a CI step rather than a PHPUnit
