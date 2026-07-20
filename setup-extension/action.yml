@@ -238,9 +238,19 @@ runs:
           fi
 
           for attempt in 1 2 3; do
+            git_flags=()
+            if [ "${attempt}" -gt 1 ]; then
+              # 'Failed sending HTTP request' (curl error 55) is a typical symptom of an
+              # HTTP/2 stream reset while the request body is being sent. Retry attempts
+              # force HTTP/1.1 and log the transfer verbosely (auth headers are redacted
+              # by git) so we can pin down where the connection breaks.
+              git_flags+=(-c http.version=HTTP/1.1)
+              export GIT_CURL_VERBOSE=1
+            fi
             # Partial clone (lazy blobs): full ref list for the .auto branch checkout below,
             # but skips historic blobs, which drastically reduces transfer size for large repos
-            if git clone --filter=blob:none "$dep_repo" "custom/plugins/$dep_name"; then
+            if git "${git_flags[@]}" clone --filter=blob:none "$dep_repo" "custom/plugins/$dep_name"; then
+              unset GIT_CURL_VERBOSE
               break
             fi
             rm -rf "custom/plugins/$dep_name"
@@ -251,6 +261,7 @@ runs:
             echo "::warning::cloning ${dep_name} failed (attempt ${attempt}/3); retrying in $((attempt * 5))s"
             sleep "$((attempt * 5))"
           done
+          unset GIT_CURL_VERBOSE
 
           if [ -n "${dep_branch}" ]; then
             if [ "${dep_branch}" = ".auto" ]; then
