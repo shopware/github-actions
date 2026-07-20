@@ -1,0 +1,52 @@
+name: "Plugin lifecycle validation"
+description: "Validates a plugin's install / uninstall / reinstall lifecycle and DAL wiring against the installed Shopware"
+author: "shopware AG"
+branding:
+  color: "blue"
+  icon: "refresh-cw"
+
+inputs:
+  extensionName:
+    description: "The plugin (technical) name to validate"
+    required: true
+  tables:
+    description: |
+      Optional whitespace-separated list of database tables the plugin owns.
+      When set, the action asserts these tables are dropped on uninstall and
+      recreated on reinstall. Leave empty to validate the lifecycle and DAL
+      wiring only.
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    # setup-extension (install: true) has already installed and activated the
+    # plugin, so start by validating: dal:validate checks every definition and its
+    # associations against the real schema, catching entity/extension wiring
+    # broken on the target version.
+    - name: Validate DAL
+      shell: bash
+      run: php "${GITHUB_WORKSPACE}/bin/console" dal:validate
+
+    # uninstall drops the plugin's tables; assert they are actually gone (a leaked
+    # table means uninstall is not clean). Done as a CI step rather than a PHPUnit
+    # test because DROP TABLE is not transactional and would break test isolation.
+    - name: Uninstall & assert tables removed
+      shell: bash
+      env:
+        EXTENSION_NAME: ${{ inputs.extensionName }}
+        TABLES: ${{ inputs.tables }}
+      run: |
+        php "${GITHUB_WORKSPACE}/bin/console" plugin:uninstall "${EXTENSION_NAME}"
+        php "${GITHUB_ACTION_PATH}/assert-tables.php" absent ${TABLES}
+
+    - name: Reinstall, assert tables recreated & re-validate DAL
+      shell: bash
+      env:
+        EXTENSION_NAME: ${{ inputs.extensionName }}
+        TABLES: ${{ inputs.tables }}
+      run: |
+        php "${GITHUB_WORKSPACE}/bin/console" plugin:install --activate --clearCache "${EXTENSION_NAME}"
+        php "${GITHUB_ACTION_PATH}/assert-tables.php" present ${TABLES}
+        php "${GITHUB_WORKSPACE}/bin/console" dal:validate

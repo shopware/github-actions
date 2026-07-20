@@ -130,3 +130,48 @@ jobs:
                     echo "next-minor looks wrong: '${NEXT_MINOR}'"
                     exit 1
                 fi
+
+    plugin-lifecycle-assert-tables:
+        runs-on: ubuntu-latest
+        services:
+            mysql:
+                image: mysql:8.0
+                env:
+                    MYSQL_ROOT_PASSWORD: root
+                    MYSQL_DATABASE: shopware
+                ports:
+                    - 3306:3306
+                options: >-
+                    --health-cmd="mysqladmin ping -proot"
+                    --health-interval=10s
+                    --health-timeout=5s
+                    --health-retries=10
+        env:
+            DATABASE_URL: mysql://root:root@127.0.0.1:3306/shopware
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - name: Setup PHP
+              uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+              with:
+                php-version: "8.3"
+                extensions: pdo_mysql
+            - name: Create a fixture table
+              run: |
+                php -r '$p=parse_url(getenv("DATABASE_URL")); $pdo=new PDO(sprintf("mysql:host=%s;port=%d;dbname=%s",$p["host"],$p["port"],ltrim($p["path"],"/")),$p["user"],$p["pass"]); $pdo->exec("CREATE TABLE existing_table (id INT)");'
+            - name: present + existing table -> passes
+              run: php plugin-lifecycle/assert-tables.php present existing_table
+            - name: absent + existing table -> must fail
+              run: |
+                if php plugin-lifecycle/assert-tables.php absent existing_table; then
+                    echo "expected a non-zero exit but the script passed"; exit 1
+                fi
+            - name: present + missing table -> must fail
+              run: |
+                if php plugin-lifecycle/assert-tables.php present missing_table; then
+                    echo "expected a non-zero exit but the script passed"; exit 1
+                fi
+            - name: absent + missing table -> passes
+              run: php plugin-lifecycle/assert-tables.php absent missing_table
+            - name: no tables -> passes (no-op)
+              run: php plugin-lifecycle/assert-tables.php absent

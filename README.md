@@ -20,6 +20,7 @@ A collection of reusable GitHub Actions and Workflows for Shopware extensions an
 |--------|-------------|------|
 | [admin-jest](admin-jest/) | Runs administration Jest tests | [README](admin-jest/README.md) |
 | [phpunit](phpunit/) | Runs PHPUnit tests for Shopware extensions | [README](phpunit/README.md) |
+| [plugin-lifecycle](plugin-lifecycle/) | Validates a plugin's install/uninstall/reinstall lifecycle and DAL wiring | [README](plugin-lifecycle/README.md) |
 
 ### Build & Release
 
