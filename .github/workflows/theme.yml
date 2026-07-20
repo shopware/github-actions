@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ (github.event.act || !github.event.repository.private) && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
     steps:
       - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Build Theme
         uses: shopware/github-actions/build-zip@main
@@ -59,7 +59,7 @@ jobs:
       test_jest: ${{ steps.should_run.outputs.test_jest }}
     steps:
       - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Determine whether to run Jest tests
         id: should_run
@@ -76,7 +76,7 @@ jobs:
       STOREFRONT_PATH: "Resources/app/storefront"
     steps:
       - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Execute Jest tests
         working-directory: ${{ env.STOREFRONT_PATH }}
