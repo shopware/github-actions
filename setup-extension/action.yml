@@ -220,7 +220,18 @@ runs:
             export GH_TOKEN="${dep_token}"
           fi
 
-          git clone "$dep_repo" "custom/plugins/$dep_name"
+          for attempt in 1 2 3; do
+            if git clone "$dep_repo" "custom/plugins/$dep_name"; then
+              break
+            fi
+            rm -rf "custom/plugins/$dep_name"
+            if [ "${attempt}" -eq 3 ]; then
+              echo "::error::cloning ${dep_name} failed after ${attempt} attempts"
+              exit 1
+            fi
+            echo "::warning::cloning ${dep_name} failed (attempt ${attempt}/3); retrying in $((attempt * 5))s"
+            sleep "$((attempt * 5))"
+          done
 
           if [ -n "${dep_branch}" ]; then
             if [ "${dep_branch}" = ".auto" ]; then
