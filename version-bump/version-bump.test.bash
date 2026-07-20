@@ -6,8 +6,7 @@ TMP_DIR=$(mktemp -d)
 
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
-# Stub `git`: `git show <ref>:<path>` returns the composer.json fixture for that ref
-# (STUB_OLD / STUB_NEW). An empty fixture simulates a missing ref/file (git exits non-zero).
+# Stub `git show <ref>:<path>` -> composer.json fixture for that ref (STUB_OLD/STUB_NEW; empty = missing).
 cat > "${TMP_DIR}/git" <<'EOF'
 #!/usr/bin/env bash
 if [[ "${1}" == "show" ]]; then
