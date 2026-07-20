@@ -194,8 +194,25 @@ runs:
         composer config prefer-stable true
         composer config minimum-stability dev
 
-        AUTOLOAD_DEV="$(jq '."autoload-dev"."psr-4" | to_entries | map({"key": .key, "value": "custom/plugins/${{ inputs.extensionName }}/\(.value)"}) | from_entries' < custom/plugins/${{ inputs.extensionName }}/composer.json)"
-        jq -s '.[0] * {"repositories": .[1]} * {"autoload-dev": {"psr-4": .[2]}}' composer.json <(echo '${{ inputs.extraRepositories }}') <(echo "$AUTOLOAD_DEV") > composer.json.new
+        AUTOLOAD_DEV="$(jq '."autoload-dev"."psr-4" // {} | to_entries | map({"key": .key, "value": "custom/plugins/${{ inputs.extensionName }}/\(.value)"}) | from_entries' < custom/plugins/${{ inputs.extensionName }}/composer.json)"
+        jq -s '
+          .[0] as $doc | .[1] as $extra | .[2] as $auto |
+          $doc | .repositories = (
+            if ($extra == null or $extra == {} or $extra == []) then
+              .repositories
+            elif (.repositories == null) then
+              $extra
+            elif (.repositories | type) == "array" then
+              .repositories + (if ($extra | type) == "array" then $extra else ($extra | to_entries | map(.value)) end)
+            elif (.repositories | type) == "object" and ($extra | type) == "object" then
+              .repositories * $extra
+            else
+              (.repositories | to_entries | map(.value)) + (if ($extra | type) == "array" then $extra else ($extra | to_entries | map(.value)) end)
+            end
+          )
+          | if .repositories == null then del(.repositories) else . end
+          | . * {"autoload-dev": {"psr-4": $auto}}
+        ' composer.json <(echo '${{ inputs.extraRepositories }}') <(echo "$AUTOLOAD_DEV") > composer.json.new
         mv composer.json.new composer.json
 
     - name: Clone Dependencies
