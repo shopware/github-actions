@@ -39,9 +39,14 @@ $pdo = new PDO(
     isset($parts['pass']) ? urldecode($parts['pass']) : ''
 );
 
+$stmt = $pdo->prepare(
+    'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'
+);
+
 $failed = false;
 foreach ($tables as $table) {
-    $exists = $pdo->query('SHOW TABLES LIKE ' . $pdo->quote($table))->fetch() !== false;
+    $stmt->execute([$table]);
+    $exists = (int) $stmt->fetchColumn() > 0;
 
     if ($mode === 'absent' && $exists) {
         fwrite(STDERR, "::error::Table $table still exists after uninstall\n");
