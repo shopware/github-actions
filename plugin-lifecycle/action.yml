@@ -23,8 +23,7 @@ runs:
   steps:
     # install + activate boots the container, so a plugin that does not compile
     # against the installed Shopware release fails here. dal:validate then checks
-    # every registered definition and its associations against the real schema,
-    # catching broken entity/extension wiring on the target version.
+    # every definition and its associations against the real schema.
     - name: Refresh, install & validate DAL
       shell: bash
       env:
@@ -46,8 +45,6 @@ runs:
         php "${GITHUB_WORKSPACE}/bin/console" plugin:uninstall "${EXTENSION_NAME}"
         php "${GITHUB_ACTION_PATH}/assert-tables.php" absent ${TABLES}
 
-    # reinstall must recreate the tables and leave the DAL valid again, proving a
-    # clean install/uninstall/reinstall round-trip on the target version.
     - name: Reinstall, assert tables recreated & re-validate DAL
       shell: bash
       env:
