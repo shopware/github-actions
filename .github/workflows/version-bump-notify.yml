@@ -53,8 +53,7 @@ jobs:
           echo "new=${{ github.event.pull_request.head.sha || github.sha }}" >> "$GITHUB_OUTPUT"
       - name: Detect version bump
         id: detect
-        # TESTING(174/release-notifications): revert to @main before merging this branch
-        uses: shopware/github-actions/version-bump@174/release-notifications
+        uses: shopware/github-actions/version-bump@main
         with:
           old-ref: ${{ steps.refs.outputs.old }}
           new-ref: ${{ steps.refs.outputs.new }}
