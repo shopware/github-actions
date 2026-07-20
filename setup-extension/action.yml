@@ -233,7 +233,7 @@ runs:
           dep_token=$(echo "$dep" | jq -r '.token // empty')
           if [ -n "${dep_token}" ]; then
             # if a custom token is provided use this token to clone
-            git config --global "http.${dep_repo}/.extraheader" "AUTHORIZATION: basic $(echo -n "x-access-token:${dep_token}" | base64)"
+            git config --global "http.${dep_repo}/.extraheader" "AUTHORIZATION: basic $(echo -n "x-access-token:${dep_token}" | base64 -w0)"
             export GH_TOKEN="${dep_token}"
           fi
 
