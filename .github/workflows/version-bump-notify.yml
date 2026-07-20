@@ -48,13 +48,8 @@ jobs:
       - name: Resolve refs
         id: refs
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "old=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
-            echo "new=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "old=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
-            echo "new=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-          fi
+          echo "old=${{ github.event.pull_request.base.sha || github.event.before }}" >> "$GITHUB_OUTPUT"
+          echo "new=${{ github.event.pull_request.head.sha || github.sha }}" >> "$GITHUB_OUTPUT"
       - name: Detect version bump
         id: detect
         uses: shopware/github-actions/version-bump@main

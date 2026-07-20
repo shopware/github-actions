@@ -84,5 +84,6 @@ run_case "version field removed" '{"version":"5.3.0"}'    '{"name":"swag/foo"}' 
 run_case "version field added"   '{"name":"swag/foo"}'    '{"version":"5.3.0"}'    false
 run_case "missing old ref"       ''                       '{"version":"5.3.0"}'    false
 run_case "leading v prefix"      '{"version":"v1.0.0"}'   '{"version":"v1.1.0"}'   true
+run_case "v prefix only"         '{"version":"v1.0.0"}'   '{"version":"1.0.0"}'    false
 
 echo "All version-bump tests passed."

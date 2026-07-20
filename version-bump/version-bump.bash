@@ -37,13 +37,16 @@ OLD_VERSION=$(read_version "${OLD_REF}")
 NEW_VERSION=$(read_version "${NEW_REF}")
 
 bumped=false
-if [[ -n "${OLD_VERSION}" && -n "${NEW_VERSION}" && "${OLD_VERSION}" != "${NEW_VERSION}" ]]; then
-    # Compare on a v-stripped value so a leading "v" never skews the ordering.
+if [[ -n "${OLD_VERSION}" && -n "${NEW_VERSION}" ]]; then
+    # Compare on a v-stripped value so a leading "v" never skews the ordering — and
+    # compare the stripped values for equality too, so "v1.0.0" -> "1.0.0" is a no-op.
     old_cmp="${OLD_VERSION#v}"
     new_cmp="${NEW_VERSION#v}"
-    highest=$(printf '%s\n%s\n' "${old_cmp}" "${new_cmp}" | sort -V | tail -n1)
-    if [[ "${highest}" == "${new_cmp}" ]]; then
-        bumped=true
+    if [[ -n "${old_cmp}" && -n "${new_cmp}" && "${old_cmp}" != "${new_cmp}" ]]; then
+        highest=$(printf '%s\n%s\n' "${old_cmp}" "${new_cmp}" | sort -V | tail -n1)
+        if [[ "${highest}" == "${new_cmp}" ]]; then
+            bumped=true
+        fi
     fi
 fi
 
@@ -51,8 +54,18 @@ echo "Previous version: '${OLD_VERSION:-<none>}'"
 echo "Current version:  '${NEW_VERSION:-<none>}'"
 echo "Bumped: ${bumped}"
 
+# Write version values with the multiline delimiter form so a value containing a
+# newline can never forge additional GITHUB_OUTPUT entries. `bumped` is a fixed literal.
+delim="__VERSION_BUMP_EOF_${RANDOM}_${RANDOM}__"
+while [[ "${OLD_VERSION}${NEW_VERSION}" == *"${delim}"* ]]; do
+    delim="__VERSION_BUMP_EOF_${RANDOM}_${RANDOM}__"
+done
 {
     echo "bumped=${bumped}"
-    echo "previous-version=${OLD_VERSION}"
-    echo "current-version=${NEW_VERSION}"
+    echo "previous-version<<${delim}"
+    printf '%s\n' "${OLD_VERSION}"
+    echo "${delim}"
+    echo "current-version<<${delim}"
+    printf '%s\n' "${NEW_VERSION}"
+    echo "${delim}"
 } >>"${GITHUB_OUTPUT}"
