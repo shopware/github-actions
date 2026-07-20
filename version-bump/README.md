@@ -25,6 +25,7 @@ Detects whether the root `version` field in `composer.json` strictly increased b
 | `current-version` | The version at `new-ref` (empty if not found) |
 
 > **Note:** the caller must check out the repository with `fetch-depth: 0` so both refs are available to `git show`.
+> **Note:** this action requires `jq` and GNU `sort` (for `sort -V`) to be available on the runner.
 
 ## Usage
 

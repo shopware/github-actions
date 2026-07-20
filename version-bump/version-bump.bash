@@ -17,9 +17,20 @@ else
     COMPOSER_PATH="${EXT_PATH%/}/composer.json"
 fi
 
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq is required but was not found on PATH" >&2
+    exit 1
+fi
+
 read_version() {
-    # Prints the composer.json version at a ref, or nothing if the ref/file/field is absent.
-    git show "${1}:${COMPOSER_PATH}" 2>/dev/null | jq -r '.version // empty' 2>/dev/null || true
+    # Prints the composer.json version at a ref. A missing ref/file yields nothing;
+    # a genuine JSON parse error propagates and fails the action loudly rather than
+    # being silently masked (which would suppress a release notification).
+    local json
+    if ! json=$(git show "${1}:${COMPOSER_PATH}" 2>/dev/null); then
+        return 0
+    fi
+    jq -r '.version // empty' <<<"${json}"
 }
 
 OLD_VERSION=$(read_version "${OLD_REF}")

@@ -35,17 +35,37 @@ run_case() {
     local out
     out=$(mktemp)
 
-    PATH="${TMP_DIR}:${PATH}" \
+    local output code
+    set +e
+    output=$(PATH="${TMP_DIR}:${PATH}" \
         STUB_OLD="${old_json}" \
         STUB_NEW="${new_json}" \
         OLD_REF=old NEW_REF=new EXT_PATH=. \
         GITHUB_OUTPUT="${out}" \
-        bash "${SCRIPT_DIR}/version-bump.bash" >/dev/null 2>&1
+        bash "${SCRIPT_DIR}/version-bump.bash" 2>&1)
+    code=$?
+    set -e
+
+    if [[ "${code}" -ne 0 ]]; then
+        echo "FAIL ${name}: version-bump.bash exited with ${code}"
+        echo "${output}"
+        cat "${out}"
+        rm -f "${out}"
+        exit 1
+    fi
 
     local got
-    got=$(grep '^bumped=' "${out}" | cut -d= -f2)
+    got=$(grep -m1 '^bumped=' "${out}" | cut -d= -f2 || true)
+    if [[ -z "${got}" ]]; then
+        echo "FAIL ${name}: did not write bumped=... to GITHUB_OUTPUT"
+        echo "${output}"
+        cat "${out}"
+        rm -f "${out}"
+        exit 1
+    fi
     if [[ "${got}" != "${expected_bumped}" ]]; then
         echo "FAIL ${name}: expected bumped=${expected_bumped}, got '${got}'"
+        echo "${output}"
         cat "${out}"
         rm -f "${out}"
         exit 1

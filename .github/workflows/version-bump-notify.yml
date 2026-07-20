@@ -70,7 +70,7 @@ jobs:
           PREVIOUS_VERSION: ${{ steps.detect.outputs.previous-version }}
           CURRENT_VERSION: ${{ steps.detect.outputs.current-version }}
           ACTOR: ${{ github.actor }}
-          LINK_URL: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}
+          LINK_URL: ${{ github.event.pull_request.html_url || github.event.compare || format('{0}/{1}/commit/{2}', github.server_url, github.repository, github.sha) }}
         run: |
           # Build the payload with jq -n so names/URLs can never break out of the JSON.
           payload=$(jq -n \
