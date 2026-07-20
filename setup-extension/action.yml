@@ -238,7 +238,9 @@ runs:
           fi
 
           for attempt in 1 2 3; do
-            if git clone "$dep_repo" "custom/plugins/$dep_name"; then
+            # Partial clone (lazy blobs): full ref list for the .auto branch checkout below,
+            # but skips historic blobs, which drastically reduces transfer size for large repos
+            if git clone --filter=blob:none "$dep_repo" "custom/plugins/$dep_name"; then
               break
             fi
             rm -rf "custom/plugins/$dep_name"
