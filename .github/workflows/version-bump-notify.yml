@@ -14,7 +14,8 @@
 #   jobs:
 #     notify:
 #       uses: shopware/github-actions/.github/workflows/version-bump-notify.yml@main
-#       secrets: inherit                  # provides SLACK_WEBHOOK_URL
+#       secrets:
+#         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}   # secret stays in the plugin repo
 name: Version Bump Notify
 on:
   workflow_call:
