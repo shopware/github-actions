@@ -57,6 +57,12 @@ A collection of reusable GitHub Actions and Workflows for Shopware extensions an
 |--------|-------------|------|
 | [saas-preview-environment](saas-preview-environment/) | Creates, migrates or archives a SaaS Preview Environment | [README](saas-preview-environment/README.md) |
 
+### Notifications
+
+| Action | Description | Link |
+|--------|-------------|------|
+| [version-bump](version-bump/) | Detects a `composer.json` version increase between two refs | [README](version-bump/README.md) |
+
 ## Usage
 
 All actions follow the standard GitHub Actions format:
