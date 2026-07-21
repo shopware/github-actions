@@ -84,5 +84,10 @@ run_case "version field added"   '{"name":"swag/foo"}'    '{"version":"5.3.0"}' 
 run_case "missing old ref"       ''                       '{"version":"5.3.0"}'    false
 run_case "leading v prefix"      '{"version":"v1.0.0"}'   '{"version":"v1.1.0"}'   true
 run_case "v prefix only"         '{"version":"v1.0.0"}'   '{"version":"1.0.0"}'    false
+run_case "rc to final"           '{"version":"1.0.0-rc1"}' '{"version":"1.0.0"}'   true
+run_case "final to rc"           '{"version":"1.0.0"}'    '{"version":"1.0.0-rc1"}' false
+run_case "rc to newer rc"        '{"version":"1.0.0-rc1"}' '{"version":"1.0.0-rc2"}' true
+run_case "rc to older rc"        '{"version":"1.0.0-rc2"}' '{"version":"1.0.0-rc1"}' false
+run_case "final to next rc"      '{"version":"1.0.0"}'    '{"version":"1.1.0-rc1"}' true
 
 echo "All version-bump tests passed."

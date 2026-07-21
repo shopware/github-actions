@@ -5,7 +5,7 @@ Detects whether the root `version` field in `composer.json` strictly increased b
 ## What it does
 
 1. Reads the `version` field from `composer.json` at `old-ref` and at `new-ref`
-2. Reports `bumped: true` only when the version strictly increased (version-aware compare, handles 3- and 4-segment versions)
+2. Reports `bumped: true` only when the version strictly increased (version-aware compare, handles 3- and 4-segment versions and treats a pre-release like `1.0.0-rc1` as lower than the final `1.0.0`)
 3. Ignores no-op edits, downgrades/reverts, and cases where the version cannot be read (e.g. a newly created branch)
 
 ## Inputs

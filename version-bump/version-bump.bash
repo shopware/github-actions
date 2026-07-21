@@ -34,17 +34,32 @@ read_version() {
 OLD_VERSION=$(read_version "${OLD_REF}")
 NEW_VERSION=$(read_version "${NEW_REF}")
 
-bumped=false
-if [[ -n "${OLD_VERSION}" && -n "${NEW_VERSION}" ]]; then
-    # Strip a leading "v" before both the equality and ordering checks.
-    old_cmp="${OLD_VERSION#v}"
-    new_cmp="${NEW_VERSION#v}"
-    if [[ -n "${old_cmp}" && -n "${new_cmp}" && "${old_cmp}" != "${new_cmp}" ]]; then
-        highest=$(printf '%s\n%s\n' "${old_cmp}" "${new_cmp}" | sort -V | tail -n1)
-        if [[ "${highest}" == "${new_cmp}" ]]; then
-            bumped=true
+version_gt() {
+    local a="${1#v}" b="${2#v}"
+    local a_core="${a%%-*}" b_core="${b%%-*}"
+    local a_pre="" b_pre=""
+    if [[ "${a}" == *-* ]]; then a_pre="${a#*-}"; fi
+    if [[ "${b}" == *-* ]]; then b_pre="${b#*-}"; fi
+
+    if [[ "${a_core}" != "${b_core}" ]]; then
+        if [[ "$(printf '%s\n%s\n' "${a_core}" "${b_core}" | sort -V | tail -n1)" == "${b_core}" ]]; then
+            return 0
         fi
+        return 1
     fi
+
+    if [[ "${a_pre}" == "${b_pre}" ]]; then return 1; fi   # identical version
+    if [[ -z "${b_pre}" ]]; then return 0; fi              # equal core: b is final, a is pre-release
+    if [[ -z "${a_pre}" ]]; then return 1; fi              # equal core: a is final, b is pre-release
+    if [[ "$(printf '%s\n%s\n' "${a_pre}" "${b_pre}" | sort -V | tail -n1)" == "${b_pre}" ]]; then
+        return 0
+    fi
+    return 1
+}
+
+bumped=false
+if [[ -n "${OLD_VERSION}" && -n "${NEW_VERSION}" ]] && version_gt "${OLD_VERSION}" "${NEW_VERSION}"; then
+    bumped=true
 fi
 
 echo "Previous version: '${OLD_VERSION:-<none>}'"
