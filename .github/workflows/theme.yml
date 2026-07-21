@@ -11,7 +11,7 @@ jobs:
     name: Build Theme
     runs-on: ${{ (github.event.act || !github.event.repository.private) && 'ubuntu-latest' || format('runs-on={0}/runner=sw-amd64', github.run_id) }}
     steps:
-      - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
+      - uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Build Theme
@@ -38,7 +38,7 @@ jobs:
         volumes:
           - /dev/shm/mysql:/var/lib/mysql
     steps:
-      - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
+      - uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
       - name: Setup and Install Theme
         uses: shopware/github-actions/setup-extension@main
         with:
@@ -58,7 +58,7 @@ jobs:
     outputs:
       test_jest: ${{ steps.should_run.outputs.test_jest }}
     steps:
-      - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
+      - uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Determine whether to run Jest tests
@@ -75,7 +75,7 @@ jobs:
     env:
       STOREFRONT_PATH: "Resources/app/storefront"
     steps:
-      - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
+      - uses: runs-on/action@4e5f72399b6b17f2e79c511c1b38a315a64d22dc # v2.2.0
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Execute Jest tests
