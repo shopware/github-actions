@@ -1,0 +1,41 @@
+name: version-bump
+description: "Detects whether the root version field in composer.json strictly increased between two git refs."
+author: "shopware AG"
+branding:
+  color: "yellow"
+  icon: "bell"
+
+inputs:
+  old-ref:
+    description: The git ref/sha for the previous state (e.g. the PR base sha)
+    required: true
+  new-ref:
+    description: The git ref/sha for the new state (e.g. the PR head sha)
+    required: true
+  path:
+    description: Path to the extension root containing composer.json
+    required: false
+    default: "."
+
+outputs:
+  bumped:
+    description: "'true' if the composer.json version strictly increased, otherwise 'false'"
+    value: ${{ steps.detect.outputs.bumped }}
+  previous-version:
+    description: The version at old-ref (empty if not found)
+    value: ${{ steps.detect.outputs.previous-version }}
+  current-version:
+    description: The version at new-ref (empty if not found)
+    value: ${{ steps.detect.outputs.current-version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect version bump
+      id: detect
+      shell: bash
+      env:
+        OLD_REF: "${{ inputs.old-ref }}"
+        NEW_REF: "${{ inputs.new-ref }}"
+        EXT_PATH: "${{ inputs.path }}"
+      run: ${GITHUB_ACTION_PATH}/version-bump.bash

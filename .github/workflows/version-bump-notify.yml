@@ -1,0 +1,102 @@
+# Reusable workflow: posts a Slack alert when a plugin's composer.json `version` is bumped
+# (an early "a release is being prepared" signal). Only a strict increase notifies — no-op
+# edits, downgrades and reverts stay silent. Add a caller to the plugin repo, e.g.:
+#
+#   name: Release prep alert
+#   on:
+#     pull_request:
+#       types: [opened, reopened, synchronize]
+#       branches: [main, master, trunk]   # your release branch(es)
+#       paths: ['composer.json']
+#     push:
+#       branches: [main, master, trunk]
+#       paths: ['composer.json']
+#   jobs:
+#     notify:
+#       uses: shopware/github-actions/.github/workflows/version-bump-notify.yml@main
+#       secrets:
+#         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}   # secret stays in the plugin repo
+name: Version Bump Notify
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: "Path to the extension root containing composer.json"
+        required: false
+        type: string
+        default: "."
+      product-name:
+        description: "Display name used in the Slack message (defaults to the repository name)"
+        required: false
+        type: string
+        default: ""
+    secrets:
+      SLACK_WEBHOOK_URL:
+        description: "Slack incoming webhook URL to post the release-prep alert to"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    name: Notify on version bump
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+      - name: Resolve refs
+        id: refs
+        run: |
+          echo "old=${{ github.event.before || github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          echo "new=${{ github.event.after || github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+      - name: Detect version bump
+        id: detect
+        uses: shopware/github-actions/version-bump@main
+        with:
+          old-ref: ${{ steps.refs.outputs.old }}
+          new-ref: ${{ steps.refs.outputs.new }}
+          path: ${{ inputs.path }}
+      - name: Notify Slack
+        if: steps.detect.outputs.bumped == 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PRODUCT_NAME: ${{ inputs.product-name || github.event.repository.name }}
+          PREVIOUS_VERSION: ${{ steps.detect.outputs.previous-version }}
+          CURRENT_VERSION: ${{ steps.detect.outputs.current-version }}
+          ACTOR: ${{ github.actor }}
+          LINK_URL: ${{ github.event.pull_request.html_url || github.event.compare || format('{0}/{1}/commit/{2}', github.server_url, github.repository, github.sha) }}
+        run: |
+          if [[ -z "${SLACK_WEBHOOK_URL}" ]]; then
+            echo "::warning::SLACK_WEBHOOK_URL is empty (e.g. a fork PR, or the secret is not configured) — skipping notification."
+            exit 0
+          fi
+          # Build the payload with jq -n so names/URLs can never break out of the JSON.
+          payload=$(jq -n \
+            --arg product "${PRODUCT_NAME}" \
+            --arg prev "${PREVIOUS_VERSION}" \
+            --arg cur "${CURRENT_VERSION}" \
+            --arg actor "${ACTOR}" \
+            --arg url "${LINK_URL}" \
+            '
+            ({
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: "*\($product)* is preparing a release\n`composer.json` version bumped *\($prev)* → *\($cur)*"
+              }
+            } | if $url != "" then .accessory = {
+                  type: "button",
+                  text: { type: "plain_text", text: "View change" },
+                  url: $url
+                } else . end) as $section
+            | {
+                text: "\($product) is preparing a release: \($prev) → \($cur)",
+                blocks: [
+                  $section,
+                  { type: "context", elements: [ { type: "mrkdwn", text: "Triggered by *\($actor)*" } ] }
+                ]
+              }
+            ')
+          curl -sS -f -X POST -H 'Content-type: application/json' --data "${payload}" "${SLACK_WEBHOOK_URL}"
