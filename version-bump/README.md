@@ -26,7 +26,7 @@ Detects whether an extension's `version` strictly increased between two git refe
 
 > **Note:** the caller must check out the repository with `fetch-depth: 0` so both refs are available to `git show`.
 >
-> **Note:** this action requires `jq` and GNU `sort` (for `sort -V`) on the runner; apps additionally need `xmllint` (from `libxml2-utils`, preinstalled on GitHub-hosted `ubuntu-latest`).
+> **Note:** this action requires `jq` and GNU `sort` (for `sort -V`) on the runner; apps additionally need `python3` (preinstalled on GitHub-hosted runners) to read `manifest.xml`.
 
 ## Usage
 

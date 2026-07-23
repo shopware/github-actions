@@ -33,13 +33,19 @@ read_version() {
         return 0
     fi
     if content=$(git show "${ref}:${MANIFEST_PATH}" 2>/dev/null); then
-        if ! command -v xmllint >/dev/null 2>&1; then
-            echo "Error: xmllint is required to read manifest.xml but was not found on PATH" >&2
+        if ! command -v python3 >/dev/null 2>&1; then
+            echo "Error: python3 is required to read manifest.xml but was not found on PATH" >&2
             exit 1
         fi
-        # No default namespace on <manifest>, so a plain XPath works; normalize-space yields
-        # an empty string (exit 0) for a missing node, while malformed XML fails loud.
-        xmllint --xpath 'normalize-space(/manifest/meta/version)' - <<<"${content}"
+        # Apps keep the version in <manifest><meta><version>; there is no default namespace,
+        # so a plain element path works. A missing node prints empty (no notification); a
+        # malformed manifest raises and propagates (fail loud), matching the composer.json path.
+        printf '%s' "${content}" | python3 -c '
+import sys, xml.etree.ElementTree as ET
+root = ET.fromstring(sys.stdin.read())
+el = root.find("./meta/version")
+sys.stdout.write((el.text or "").strip() if el is not None else "")
+'
         return 0
     fi
     return 0
