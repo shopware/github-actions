@@ -1,10 +1,10 @@
 # Version Bump
 
-Detects whether the root `version` field in `composer.json` strictly increased between two git references.
+Detects whether an extension's `version` strictly increased between two git references. Works for plugins (`composer.json`) and apps (`manifest.xml`).
 
 ## What it does
 
-1. Reads the `version` field from `composer.json` at `old-ref` and at `new-ref`
+1. Reads the version at `old-ref` and at `new-ref` — from `composer.json` (`.version`) for plugins, or from `manifest.xml` (`/manifest/meta/version`) for apps. `composer.json` takes precedence when both are present.
 2. Reports `bumped: true` only when the version strictly increased (version-aware compare, handles 3- and 4-segment versions and treats a pre-release like `1.0.0-rc1` as lower than the final `1.0.0`)
 3. Ignores no-op edits, downgrades/reverts, and cases where the version cannot be read (e.g. a newly created branch)
 
@@ -14,7 +14,7 @@ Detects whether the root `version` field in `composer.json` strictly increased b
 |-------|-------------|----------|---------|
 | `old-ref` | The git ref/sha for the previous state (e.g. the PR base sha) | Yes | - |
 | `new-ref` | The git ref/sha for the new state (e.g. the PR head sha) | Yes | - |
-| `path` | Path to the extension root containing `composer.json` | No | `.` |
+| `path` | Path to the extension root containing `composer.json` (plugin) or `manifest.xml` (app) | No | `.` |
 
 ## Outputs
 
@@ -26,7 +26,7 @@ Detects whether the root `version` field in `composer.json` strictly increased b
 
 > **Note:** the caller must check out the repository with `fetch-depth: 0` so both refs are available to `git show`.
 >
-> **Note:** this action requires `jq` and GNU `sort` (for `sort -V`) to be available on the runner.
+> **Note:** this action requires `jq` and GNU `sort` (for `sort -V`) on the runner; apps additionally need `xmllint` (from `libxml2-utils`, preinstalled on GitHub-hosted `ubuntu-latest`).
 
 ## Usage
 

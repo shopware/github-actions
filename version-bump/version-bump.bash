@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 
-# Detects whether the root `version` field in composer.json strictly increased
-# between two git references.
+# Detects whether the extension version strictly increased between two git references.
+# Plugins carry the version in composer.json, apps in manifest.xml (<manifest><meta><version>).
 #
 # Global environment variables required:
 # OLD_REF  - git ref/sha for the previous state (e.g. the PR base sha)
 # NEW_REF  - git ref/sha for the new state (e.g. the PR head sha)
-# EXT_PATH - path to the extension root containing composer.json (default: .)
+# EXT_PATH - path to the extension root containing composer.json or manifest.xml (default: .)
 
 set -euo pipefail
 
 EXT_PATH="${EXT_PATH:-.}"
 if [[ "${EXT_PATH}" == "." || -z "${EXT_PATH}" ]]; then
-    COMPOSER_PATH="composer.json"
+    prefix=""
 else
-    COMPOSER_PATH="${EXT_PATH%/}/composer.json"
+    prefix="${EXT_PATH%/}/"
 fi
+COMPOSER_PATH="${prefix}composer.json"
+MANIFEST_PATH="${prefix}manifest.xml"
 
 if ! command -v jq >/dev/null 2>&1; then
     echo "Error: jq is required but was not found on PATH" >&2
@@ -24,11 +26,23 @@ fi
 
 read_version() {
     # Missing ref/file -> empty (no notification); a parse error propagates (fail loud).
-    local json
-    if ! json=$(git show "${1}:${COMPOSER_PATH}" 2>/dev/null); then
+    # composer.json (plugin) takes precedence over manifest.xml (app) when both exist.
+    local ref="${1}" content
+    if content=$(git show "${ref}:${COMPOSER_PATH}" 2>/dev/null); then
+        jq -r '.version // empty' <<<"${content}"
         return 0
     fi
-    jq -r '.version // empty' <<<"${json}"
+    if content=$(git show "${ref}:${MANIFEST_PATH}" 2>/dev/null); then
+        if ! command -v xmllint >/dev/null 2>&1; then
+            echo "Error: xmllint is required to read manifest.xml but was not found on PATH" >&2
+            exit 1
+        fi
+        # No default namespace on <manifest>, so a plain XPath works; normalize-space yields
+        # an empty string (exit 0) for a missing node, while malformed XML fails loud.
+        xmllint --xpath 'normalize-space(/manifest/meta/version)' - <<<"${content}"
+        return 0
+    fi
+    return 0
 }
 
 OLD_VERSION=$(read_version "${OLD_REF}")

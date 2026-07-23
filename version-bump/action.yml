@@ -1,5 +1,5 @@
 name: version-bump
-description: "Detects whether the root version field in composer.json strictly increased between two git refs."
+description: "Detects whether an extension's version strictly increased between two git refs (composer.json for plugins, manifest.xml for apps)."
 author: "shopware AG"
 branding:
   color: "yellow"
@@ -13,13 +13,13 @@ inputs:
     description: The git ref/sha for the new state (e.g. the PR head sha)
     required: true
   path:
-    description: Path to the extension root containing composer.json
+    description: Path to the extension root containing composer.json (plugin) or manifest.xml (app)
     required: false
     default: "."
 
 outputs:
   bumped:
-    description: "'true' if the composer.json version strictly increased, otherwise 'false'"
+    description: "'true' if the extension version strictly increased, otherwise 'false'"
     value: ${{ steps.detect.outputs.bumped }}
   previous-version:
     description: The version at old-ref (empty if not found)
