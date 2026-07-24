@@ -1,27 +1,28 @@
-# Reusable workflow: posts a Slack alert when a plugin's composer.json `version` is bumped
-# (an early "a release is being prepared" signal). Only a strict increase notifies — no-op
-# edits, downgrades and reverts stay silent. Add a caller to the plugin repo, e.g.:
+# Reusable workflow: posts a Slack alert when an extension's version is bumped — an early
+# "a release is being prepared" signal. Works for plugins (composer.json) and apps
+# (manifest.xml). Only a strict increase notifies — no-op edits, downgrades and reverts stay
+# silent. Add a caller to the extension repo, using the version file it ships:
 #
 #   name: Release prep alert
 #   on:
 #     pull_request:
 #       types: [opened, reopened, synchronize]
 #       branches: [main, master, trunk]   # your release branch(es)
-#       paths: ['composer.json']
+#       paths: ['composer.json']          # apps: ['manifest.xml']
 #     push:
 #       branches: [main, master, trunk]
-#       paths: ['composer.json']
+#       paths: ['composer.json']          # apps: ['manifest.xml']
 #   jobs:
 #     notify:
 #       uses: shopware/github-actions/.github/workflows/version-bump-notify.yml@main
 #       secrets:
-#         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}   # secret stays in the plugin repo
+#         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}   # secret stays in the extension repo
 name: Version Bump Notify
 on:
   workflow_call:
     inputs:
       path:
-        description: "Path to the extension root containing composer.json"
+        description: "Path to the extension root containing composer.json (plugin) or manifest.xml (app)"
         required: false
         type: string
         default: "."
@@ -84,7 +85,7 @@ jobs:
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: "*\($product)* is preparing a release\n`composer.json` version bumped *\($prev)* → *\($cur)*"
+                text: "*\($product)* is preparing a release\nversion bumped *\($prev)* → *\($cur)*"
               }
             } | if $url != "" then .accessory = {
                   type: "button",
