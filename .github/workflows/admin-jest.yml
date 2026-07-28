@@ -52,6 +52,7 @@ jobs:
           install: true
           install-admin: true
           env: prod
+          allow-insecure-versions: true
           extraRepositories: |
             {
               "${{ github.event.repository.name }}": {
