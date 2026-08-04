@@ -41,8 +41,16 @@ inputs:
     description: "Completely override the default system prompt (ignores all formatting inputs)"
     required: false
     default: ""
+  api-endpoint:
+    description: "OpenAI-compatible chat completions endpoint URL"
+    required: false
+    default: "https://api.openai.com/v1/chat/completions"
+  api-key:
+    description: "API key for the AI provider. When empty, the AI rewrite is skipped and the raw GitHub changelog is used as release notes."
+    required: false
+    default: ""
   model:
-    description: "GitHub Models API model name"
+    description: "Model name understood by the configured endpoint"
     required: false
     default: "gpt-4o"
   temperature:
@@ -70,13 +78,13 @@ inputs:
     required: false
     default: "true"
   github-token:
-    description: "GitHub token with models:read and contents:write permissions"
+    description: "GitHub token with contents:write permission"
     required: false
     default: "${{ github.token }}"
 
 outputs:
   release-notes:
-    description: "The AI-generated release notes (Markdown)"
+    description: "The AI-generated release notes (Markdown) — or the raw changelog when the AI rewrite was skipped"
     value: "${{ steps.ai-notes.outputs.notes }}"
   raw-notes:
     description: "The raw GitHub-generated changelog before AI rewrite"
@@ -140,7 +148,8 @@ runs:
       id: ai-notes
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
-        GITHUB_TOKEN: "${{ inputs.github-token }}"
+        INPUT_API_ENDPOINT: "${{ inputs.api-endpoint }}"
+        INPUT_API_KEY: "${{ inputs.api-key }}"
         RAW_NOTES: "${{ steps.raw-notes.outputs.body }}"
         INPUT_PRODUCT_NAME: "${{ inputs.product-name }}"
         INPUT_PRODUCT_DESCRIPTION: "${{ inputs.product-description }}"
@@ -158,6 +167,13 @@ runs:
           const currentTag = process.env.GITHUB_REF_NAME;
           const rawNotes = process.env.RAW_NOTES;
           const customPrompt = process.env.INPUT_CUSTOM_PROMPT;
+          const apiKey = process.env.INPUT_API_KEY;
+
+          if (!apiKey) {
+            core.warning('No api-key configured — skipping AI rewrite and using the raw GitHub changelog as release notes.');
+            core.setOutput('notes', rawNotes);
+            return;
+          }
 
           let systemPrompt;
 
@@ -216,11 +232,11 @@ runs:
             systemPrompt = lines.join('\n');
           }
 
-          const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+          const response = await fetch(process.env.INPUT_API_ENDPOINT, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+              'Authorization': `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
               model: process.env.INPUT_MODEL,
@@ -234,14 +250,16 @@ runs:
 
           if (!response.ok) {
             const errorBody = await response.text();
-            core.setFailed(`GitHub Models API error (${response.status}): ${errorBody}`);
+            core.warning(`AI API error (${response.status}): ${errorBody} — falling back to the raw GitHub changelog.`);
+            core.setOutput('notes', rawNotes);
             return;
           }
 
           const result = await response.json();
 
           if (!result.choices?.length) {
-            core.setFailed(`Unexpected API response: ${JSON.stringify(result)}`);
+            core.warning(`Unexpected AI API response: ${JSON.stringify(result)} — falling back to the raw GitHub changelog.`);
+            core.setOutput('notes', rawNotes);
             return;
           }
 

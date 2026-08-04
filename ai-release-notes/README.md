@@ -2,14 +2,17 @@
 
 Generate polished, AI-powered release notes from GitHub's auto-generated changelog and optionally create a draft GitHub release.
 
-The action compares the current tag with the previous one, fetches the raw changelog via the GitHub API, rewrites it using the [GitHub Models API](https://docs.github.com/en/github-models), and creates a draft release with the result.
+The action compares the current tag with the previous one, fetches the raw changelog via the GitHub API, rewrites it using an OpenAI-compatible chat completions API, and creates a draft release with the result.
+
+> **Note:** This action previously used the GitHub Models API, which was [fully retired on July 30, 2026](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/). It now calls a configurable OpenAI-compatible endpoint instead and requires an `api-key`. Without an `api-key`, the AI rewrite is skipped and the raw GitHub changelog is used — the release is still created.
 
 ## Prerequisites
 
 The calling workflow must:
 
 1. **Check out the repository** with full history (`fetch-depth: 0`) so previous tags can be detected.
-2. **Grant permissions** for `contents: write` (to create releases) and `models: read` (to call the AI API).
+2. **Grant permissions** for `contents: write` (to create releases).
+3. **Provide an API key** for an OpenAI-compatible provider via the `api-key` input (typically an org/repo secret). Without it, the release falls back to the raw GitHub changelog.
 
 ## Usage
 
@@ -25,7 +28,6 @@ on:
 
 permissions:
   contents: write
-  models: read
 
 jobs:
   release-notes:
@@ -38,6 +40,20 @@ jobs:
       - uses: shopware/github-actions/ai-release-notes@main
         with:
           product-name: "My Product"
+          api-key: ${{ secrets.OPENAI_API_KEY }}
+```
+
+### Using a Different Provider
+
+Any OpenAI-compatible chat completions endpoint works — for example the Anthropic API:
+
+```yaml
+      - uses: shopware/github-actions/ai-release-notes@main
+        with:
+          product-name: "My Product"
+          api-endpoint: "https://api.anthropic.com/v1/chat/completions"
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: "claude-sonnet-5"
 ```
 
 ### Customised Example
@@ -87,20 +103,22 @@ Use the action as a pure notes generator — for example to post to Slack or app
 | `collapse-types` | no | `"dependency,translation,CI"` | Change types collapsed under the last section |
 | `additional-rules` | no | `""` | Extra rules appended to the default prompt |
 | `custom-prompt` | no | `""` | Completely override the system prompt (ignores all formatting inputs) |
-| `model` | no | `"gpt-4o"` | GitHub Models API model name |
+| `api-endpoint` | no | `"https://api.openai.com/v1/chat/completions"` | OpenAI-compatible chat completions endpoint URL |
+| `api-key` | no | `""` | API key for the AI provider — when empty, the AI rewrite is skipped and the raw changelog is used |
+| `model` | no | `"gpt-4o"` | Model name understood by the configured endpoint |
 | `temperature` | no | `"0.4"` | AI temperature (`0.0` = deterministic, `1.0` = creative) |
 | `tag-pattern` | no | `"^v"` | Regex pattern to match tags when detecting the previous release |
 | `release-name` | no | `"Release {tag}"` | Release name template — use `{tag}` as placeholder for the tag name |
 | `draft` | no | `"true"` | Create the release as a draft |
 | `prerelease` | no | `"false"` | Mark the release as a prerelease |
 | `create-release` | no | `"true"` | Whether to create a GitHub release (`"false"` = only generate notes) |
-| `github-token` | no | `${{ github.token }}` | GitHub token (needs `models:read` + `contents:write`) |
+| `github-token` | no | `${{ github.token }}` | GitHub token (needs `contents:write`) |
 
 ## Outputs
 
 | Output | Description |
 |---|---|
-| `release-notes` | The AI-generated release notes (Markdown) |
+| `release-notes` | The AI-generated release notes (Markdown) — or the raw changelog when the AI rewrite was skipped |
 | `raw-notes` | The raw GitHub-generated changelog before AI rewrite |
 | `release-url` | URL of the created release (empty if `create-release` is `"false"`) |
 | `previous-tag` | The detected previous git tag |
