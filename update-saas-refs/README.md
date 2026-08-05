@@ -11,7 +11,7 @@ Action to trigger an update of SAAS upstream refs for a given branch.
 
 | Input           | Description                          | Required | Default |
 |-----------------|--------------------------------------|----------|---------|
-| `pull_request` | The pull request that triggered the update | No | `${{ github.event.pull_request }}` |
+| `pull_request` | The pull request that triggered the update | Yes | `${{ github.event.pull_request }}` |
 | `target-branch` | target branch in the saas repository | No | `${{ github.base_ref }}` |
 
 ## Usage
