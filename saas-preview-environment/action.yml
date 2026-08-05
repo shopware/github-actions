@@ -1,5 +1,5 @@
 name: SaaS Preview Environment
-description: "Create, migrate or archive a SaaS Preview Environment"
+description: "Create or archive a SaaS Preview Environment"
 author: "shopware AG"
 branding:
   color: "blue"

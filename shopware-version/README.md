@@ -17,7 +17,7 @@ Gets the Shopware version that matches the current branch.
 | `ref` | The git reference to match (defaults to `github.ref`) | No | - |
 | `base-ref` | The base reference for pull requests (defaults to `github.base_ref`) | No | - |
 | `head-ref` | The head reference for pull requests (defaults to `github.head_ref`) | No | - |
-| `shopware-github-token` | Token used for checking out the shopware repository | No | - |
+| `github-token` | GitHub token used to authenticate gh API calls | No | `${{ github.token }}` |
 
 ## Outputs
 
@@ -51,7 +51,7 @@ Gets the Shopware version that matches the current branch.
   with:
     repo: my-org/shopware
     fallback: trunk
-    shopware-github-token: ${{ secrets.SHOPWARE_TOKEN }}
+    github-token: ${{ secrets.SHOPWARE_TOKEN }}
 ```
 
 ### Using the output
