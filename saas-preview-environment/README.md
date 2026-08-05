@@ -1,6 +1,6 @@
 # SaaS Preview Environment
 
-Create, migrate or archive a SaaS Preview Environment.
+Create or archive a SaaS Preview Environment.
 
 ## What it does
 

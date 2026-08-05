@@ -56,7 +56,8 @@ A collection of reusable GitHub Actions and Workflows for Shopware extensions an
 
 | Action | Description | Link |
 |--------|-------------|------|
-| [saas-preview-environment](saas-preview-environment/) | Creates, migrates or archives a SaaS Preview Environment | [README](saas-preview-environment/README.md) |
+| [saas-preview-environment](saas-preview-environment/) | Creates or archives a SaaS Preview Environment | [README](saas-preview-environment/README.md) |
+| [update-saas-refs](update-saas-refs/) | Triggers an update of SAAS upstream refs for a given branch | [README](update-saas-refs/README.md) |
 
 ### Notifications
 

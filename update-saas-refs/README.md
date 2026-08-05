@@ -1,16 +1,17 @@
 # Update SAAS Refs Action
 
-Action to create a PR with updated SAAS refs for a given branch.
+Action to trigger an update of SAAS upstream refs for a given branch.
 
 ## What it does
 
 1. Checks if the target branch exists in the saas repository
-2. create a PR to update the upstream refs in the target branch to the latest commit
+2. Triggers the `core-update.yml` workflow in `shopware/saas` to update upstream refs on that branch
 
 ## Inputs
 
 | Input           | Description                          | Required | Default |
 |-----------------|--------------------------------------|----------|---------|
+| `pull_request` | The pull request that triggered the update | No | `${{ github.event.pull_request }}` |
 | `target-branch` | target branch in the saas repository | No | `${{ github.base_ref }}` |
 
 ## Usage

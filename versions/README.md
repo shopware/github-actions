@@ -14,6 +14,7 @@ Gets the first and latest versions of the current and previous (LTS) major versi
 |-------|-------------|----------|---------|
 | `major` | Current major prefix (e.g., `v6.7.`) | No | `v6.7.` |
 | `lts-major` | LTS major prefix (e.g., `v6.6.`) | No | `v6.6.` |
+| `github-token` | Token used to check for release branches via the GitHub API | No | `${{ github.token }}` |
 
 ## Outputs
 

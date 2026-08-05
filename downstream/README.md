@@ -16,7 +16,7 @@ Trigger a downstream workflow in another repository and wait for it to finish.
 |-------|-------------|----------|---------|
 | `repo` | Downstream repo | Yes | - |
 | `token-scope` | Scope for the sts token | No | - |
-| `workflow` | Workflow to dispatch in downstream | Yes | - |
+| `workflow` | Workflow filename to dispatch in downstream (including `.yml` / `.yaml` suffix) | Yes | - |
 | `ref` | Downstream ref (`.auto` to auto-detect matching refs) | No | `.auto` |
 | `refFallback` | Fallback ref in case there's no matching branch | No | `trunk` |
 | `env` | Environment variables to pass to downstream workflow | No | - |
@@ -48,7 +48,7 @@ jobs:
       - uses: shopware/github-actions/downstream@main
         with:
           repo: my-org/my-repo
-          workflow: test
+          workflow: test.yml
           ref: trunk
 ```
 
@@ -62,7 +62,7 @@ jobs:
       - uses: shopware/github-actions/downstream@main
         with:
           repo: my-org/my-repo
-          workflow: test
+          workflow: test.yml
           ref: .auto
           refFallback: trunk
 ```
@@ -77,7 +77,7 @@ jobs:
       - uses: shopware/github-actions/downstream@main
         with:
           repo: my-org/my-repo
-          workflow: test
+          workflow: test.yml
           env: |
             PLATFORM_BRANCH=trunk
             FOO=bar
@@ -93,7 +93,7 @@ jobs:
       - uses: shopware/github-actions/downstream@main
         with:
           repo: my-org/my-repo
-          workflow: test
+          workflow: test.yml
           timeout: 60m
           poll_interval: 1m
 ```
@@ -108,7 +108,7 @@ jobs:
       - uses: shopware/github-actions/downstream@main
         with:
           repo: my-org/my-repo
-          workflow: test
+          workflow: test.yml
           token: ${{ secrets.CUSTOM_TOKEN }}
 ```
 

@@ -5,8 +5,8 @@ Connects to upstream from downstream run.
 ## What it does
 
 1. Receives upstream data from a triggered workflow
-2. Sets environment variables from the upstream run
-3. Displays information about the upstream workflow that triggered the run
+2. Displays information about the upstream workflow that triggered the run
+3. Sets custom environment variables passed from the upstream run
 
 ## Inputs
 
@@ -37,15 +37,17 @@ jobs:
 
 ### Accessing upstream data
 
-After using this action, the following environment variables are available:
+This action logs the upstream workflow run URL when `upstream_data` contains upstream metadata.
 
-- `upstream.id`: The run ID of the upstream workflow
-- `upstream.ref`: The ref of the upstream workflow
-- `upstream.repo`: The repository of the upstream workflow
-- `upstream.github-token`: The GitHub token from upstream
-- `upstream.url`: URL to the upstream workflow run
+Custom environment variables passed from upstream via the `env` input of the downstream action are written to `$GITHUB_ENV` and become available to later steps.
 
-Any custom environment variables passed from upstream via the `env` input of the downstream action will also be set.
+Upstream metadata (`id`, `ref`, `repo`, `url`, etc.) stays inside the JSON `upstream_data` input. Access it with `fromJSON`, for example:
+
+```yaml
+- run: |
+    echo "Triggered by: ${{ fromJSON(inputs.upstream_data).upstream.repo }}"
+    echo "Run URL: ${{ fromJSON(inputs.upstream_data).upstream.url }}"
+```
 
 ## Example: Combined with downstream action
 
@@ -58,8 +60,11 @@ jobs:
       - uses: shopware/github-actions/downstream@main
         with:
           repo: my-org/my-repo
-          workflow: test
+          workflow: test.yml
           ref: trunk
+          env: |
+            PLATFORM_BRANCH=trunk
+            FOO=bar
 ```
 
 **Downstream workflow:**
@@ -78,6 +83,6 @@ jobs:
         with:
           upstream_data: ${{ inputs.upstream_data }}
       - run: |
-          echo "Triggered by: ${{ env.upstream.repo }}"
-          echo "Run URL: ${{ env.upstream.url }}"
+          echo "Custom env from upstream: $PLATFORM_BRANCH $FOO"
+          echo "Upstream run URL: ${{ fromJSON(inputs.upstream_data).upstream.url }}"
 ```

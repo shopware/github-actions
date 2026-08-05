@@ -1,5 +1,5 @@
 name: "Downstream workflow"
-description: "Trigger a downstream worflow in another repository"
+description: "Trigger a downstream workflow in another repository"
 author: "shopware AG"
 branding:
   color: "blue"
@@ -10,10 +10,10 @@ inputs:
     description: "Downstream repo"
     required: true
   token-scope:
-    description: "Scrope for the sts token"
+    description: "Scope for the sts token"
     required: false
   workflow:
-    description: "Workflow to dispatch in downstream"
+    description: "Workflow filename to dispatch in downstream (including .yml / .yaml suffix)"
     required: true
   ref:
     description: "Downstream ref, automatically detects matching refs with .auto"
