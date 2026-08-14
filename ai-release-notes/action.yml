@@ -41,22 +41,30 @@ inputs:
     description: "Completely override the default system prompt (ignores all formatting inputs)"
     required: false
     default: ""
+  provider:
+    description: "AI provider: 'openai' (OpenAI-compatible endpoint authenticated with api-key) or 'bedrock' (Claude on Amazon Bedrock, authenticated with the ambient AWS credentials — run aws-actions/configure-aws-credentials before this action)"
+    required: false
+    default: "openai"
   api-endpoint:
-    description: "OpenAI-compatible chat completions endpoint URL"
+    description: "OpenAI-compatible chat completions endpoint URL (provider: openai only)"
     required: false
     default: "https://api.openai.com/v1/chat/completions"
   api-key:
-    description: "API key for the AI provider. When empty, the AI rewrite is skipped and the raw GitHub changelog is used as release notes."
+    description: "API key for the AI provider (provider: openai only). When empty, the AI rewrite is skipped and the raw GitHub changelog is used as release notes."
     required: false
     default: ""
   model:
-    description: "Model name understood by the configured endpoint"
+    description: "Model name understood by the configured provider. Defaults per provider: 'gpt-4o' for openai, 'eu.anthropic.claude-sonnet-5' (cross-region inference profile) for bedrock."
     required: false
-    default: "gpt-4o"
+    default: ""
   temperature:
-    description: "AI model temperature (0.0 = deterministic, 1.0 = creative)"
+    description: "AI model temperature (0.0 = deterministic, 1.0 = creative). Only sent on the openai path — Claude Sonnet 5 and Opus 5 reject sampling parameters."
     required: false
     default: "0.4"
+  max-output-tokens:
+    description: "Output token budget for the bedrock path. Claude's adaptive thinking draws from the same budget, so keep it generous."
+    required: false
+    default: "8192"
   tag-pattern:
     description: "Regex pattern to match tags when detecting the previous release (e.g. '^v', '^release-')"
     required: false
@@ -148,8 +156,10 @@ runs:
       id: ai-notes
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
+        INPUT_PROVIDER: "${{ inputs.provider }}"
         INPUT_API_ENDPOINT: "${{ inputs.api-endpoint }}"
         INPUT_API_KEY: "${{ inputs.api-key }}"
+        INPUT_MAX_OUTPUT_TOKENS: "${{ inputs.max-output-tokens }}"
         RAW_NOTES: "${{ steps.raw-notes.outputs.body }}"
         INPUT_PRODUCT_NAME: "${{ inputs.product-name }}"
         INPUT_PRODUCT_DESCRIPTION: "${{ inputs.product-description }}"
@@ -167,10 +177,22 @@ runs:
           const currentTag = process.env.GITHUB_REF_NAME;
           const rawNotes = process.env.RAW_NOTES;
           const customPrompt = process.env.INPUT_CUSTOM_PROMPT;
+          const provider = process.env.INPUT_PROVIDER;
           const apiKey = process.env.INPUT_API_KEY;
 
-          if (!apiKey) {
+          if (provider !== 'openai' && provider !== 'bedrock') {
+            core.setFailed(`Unknown provider "${provider}" — expected "openai" or "bedrock".`);
+            return;
+          }
+
+          if (provider === 'openai' && !apiKey) {
             core.warning('No api-key configured — skipping AI rewrite and using the raw GitHub changelog as release notes.');
+            core.setOutput('notes', rawNotes);
+            return;
+          }
+
+          if (provider === 'bedrock' && !process.env.AWS_ACCESS_KEY_ID) {
+            core.warning('No AWS credentials in the environment — run aws-actions/configure-aws-credentials before this action. Skipping AI rewrite and using the raw GitHub changelog as release notes.');
             core.setOutput('notes', rawNotes);
             return;
           }
@@ -232,39 +254,138 @@ runs:
             systemPrompt = lines.join('\n');
           }
 
-          const response = await fetch(process.env.INPUT_API_ENDPOINT, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-              model: process.env.INPUT_MODEL,
-              temperature: parseFloat(process.env.INPUT_TEMPERATURE),
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: `Rewrite these auto-generated release notes:\n\n${rawNotes}` },
-              ],
-            }),
-          });
+          const userPrompt = `Rewrite these auto-generated release notes:\n\n${rawNotes}`;
+          const model = process.env.INPUT_MODEL
+            || (provider === 'bedrock' ? 'eu.anthropic.claude-sonnet-5' : 'gpt-4o');
 
-          if (!response.ok) {
-            const errorBody = await response.text();
-            core.warning(`AI API error (${response.status}): ${errorBody} — falling back to the raw GitHub changelog.`);
+          let aiNotes;
+          try {
+            aiNotes = provider === 'bedrock'
+              ? await requestBedrock({ model, systemPrompt, userPrompt })
+              : await requestOpenAi({ model, systemPrompt, userPrompt });
+          } catch (error) {
+            core.warning(`${error.message} — falling back to the raw GitHub changelog.`);
             core.setOutput('notes', rawNotes);
             return;
           }
 
-          const result = await response.json();
-
-          if (!result.choices?.length) {
-            core.warning(`Unexpected AI API response: ${JSON.stringify(result)} — falling back to the raw GitHub changelog.`);
-            core.setOutput('notes', rawNotes);
-            return;
-          }
-
-          const aiNotes = result.choices[0].message.content;
           core.setOutput('notes', aiNotes);
+
+          async function requestOpenAi({ model, systemPrompt, userPrompt }) {
+            const response = await fetch(process.env.INPUT_API_ENDPOINT, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model,
+                temperature: parseFloat(process.env.INPUT_TEMPERATURE),
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: userPrompt },
+                ],
+              }),
+            });
+
+            if (!response.ok) {
+              const errorBody = await response.text();
+              throw new Error(`AI API error (${response.status}): ${errorBody}`);
+            }
+
+            const result = await response.json();
+
+            if (!result.choices?.length) {
+              throw new Error(`Unexpected AI API response: ${JSON.stringify(result)}`);
+            }
+
+            return result.choices[0].message.content;
+          }
+
+          // Claude on Amazon Bedrock via the `aws` CLI preinstalled on GitHub-hosted
+          // runners — the CLI does the SigV4 signing that would otherwise require an
+          // SDK dependency. Credentials are the short-lived STS credentials that
+          // aws-actions/configure-aws-credentials derives from the workflow's OIDC
+          // token; nothing long-lived is stored.
+          async function requestBedrock({ model, systemPrompt, userPrompt }) {
+            const { execFileSync } = require('node:child_process');
+            const fs = require('node:fs');
+            const os = require('node:os');
+            const path = require('node:path');
+
+            // configure-aws-credentials exports AWS_REGION from its `aws-region` input.
+            const awsRegion = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
+            if (!awsRegion) {
+              throw new Error('Missing AWS_REGION — pass `aws-region` to aws-actions/configure-aws-credentials');
+            }
+
+            const body = {
+              // Identifies the request body schema for Bedrock's InvokeModel API;
+              // unrelated to the model version.
+              anthropic_version: 'bedrock-2023-05-31',
+              // Claude's adaptive thinking draws from the same output budget.
+              max_tokens: parseInt(process.env.INPUT_MAX_OUTPUT_TOKENS, 10),
+              // No `temperature`: Claude Sonnet 5 and Opus 5 reject sampling parameters.
+              system: systemPrompt,
+              messages: [{ role: 'user', content: userPrompt }],
+            };
+
+            // The request body goes to the CLI as a file rather than an argument —
+            // release-notes prompts can run to tens of kilobytes.
+            const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-release-notes-'));
+            const requestPath = path.join(scratch, 'request.json');
+            const responsePath = path.join(scratch, 'response.json');
+
+            let message;
+            try {
+              fs.writeFileSync(requestPath, JSON.stringify(body), 'utf8');
+
+              try {
+                execFileSync(
+                  'aws',
+                  [
+                    'bedrock-runtime', 'invoke-model',
+                    '--region', awsRegion,
+                    '--model-id', model,
+                    '--content-type', 'application/json',
+                    '--body', `fileb://${requestPath}`,
+                    '--cli-read-timeout', '300',
+                    '--cli-connect-timeout', '30',
+                    responsePath,
+                  ],
+                  { stdio: ['ignore', 'ignore', 'pipe'], encoding: 'utf8' },
+                );
+              } catch (error) {
+                const stderr = (error.stderr || '').trim();
+                throw new Error(`aws bedrock-runtime invoke-model failed: ${stderr || error.message}`);
+              }
+
+              message = JSON.parse(fs.readFileSync(responsePath, 'utf8'));
+            } finally {
+              fs.rmSync(scratch, { force: true, recursive: true });
+            }
+
+            if (message.stop_reason === 'refusal') {
+              throw new Error(`Claude declined the request (refusal category: ${message.stop_details?.category ?? 'unknown'})`);
+            }
+
+            if (message.stop_reason === 'max_tokens') {
+              throw new Error(`Claude hit the ${body.max_tokens}-token output cap (max-output-tokens) before finishing`);
+            }
+
+            // Thinking blocks precede the text block, so filter by type rather than
+            // indexing content[0].
+            const text = message.content?.find((block) => block.type === 'text')?.text;
+            if (typeof text !== 'string' || text.trim() === '') {
+              throw new Error(`Claude returned no text content (stop_reason: ${message.stop_reason})`);
+            }
+
+            if (message.usage) {
+              core.info(`${model} — input ${message.usage.input_tokens} / output ${message.usage.output_tokens} tokens.`);
+            }
+
+            return text;
+          }
 
     - name: Create GitHub release
       id: create-release
