@@ -15,6 +15,7 @@ Validates and formats Shopware extensions using shopware-cli.
 | `version` | The extension verifier version to use | No | `latest` |
 | `action` | The action to run (`check` or `format`) | Yes | `check` |
 | `check-against` | The version to check against | No | `highest` |
+| `exclude` | Comma-separated list of tools to exclude from the check (e.g. `phpstan,eslint`) | No | *(none)* |
 
 ## Usage
 
@@ -37,6 +38,17 @@ jobs:
     with:
       action: check
       check-against: v6.6.0.0
+```
+
+### Exclude specific tools
+
+```yaml
+jobs:
+  verify:
+    uses: shopware/github-actions/extension-verifier@main
+    with:
+      action: check
+      exclude: phpstan,eslint
 ```
 
 ### Format extension (dry-run)
