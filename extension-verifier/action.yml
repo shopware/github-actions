@@ -17,6 +17,10 @@ inputs:
     description: "The version to check against"
     required: false
     default: "highest"
+  exclude:
+    description: "Comma-separated list of tools to exclude from the check (e.g. phpstan,eslint)"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -26,7 +30,15 @@ runs:
     - name: Run verifier
       if: inputs.action == 'check'
       shell: bash
-      run: shopware-cli extension validate --full --check-against ${{ inputs.check-against }} .
+      env:
+        CHECK_AGAINST: ${{ inputs.check-against }}
+        EXCLUDE: ${{ inputs.exclude }}
+      run: |
+        ARGS=(--full --check-against "${CHECK_AGAINST}")
+        if [[ -n "${EXCLUDE}" ]]; then
+          ARGS+=("--exclude=${EXCLUDE}")
+        fi
+        shopware-cli extension validate "${ARGS[@]}" .
     - name: Run formatter
       if: inputs.action == 'format'
       shell: bash
