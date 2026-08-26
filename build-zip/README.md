@@ -8,7 +8,7 @@ Builds the extension zip and validates it using shopware-cli.
 2. Installs shopware-cli
 3. Builds the extension zip using shopware-cli
 4. Validates the zip file
-5. Uploads the artifact
+5. Uploads the extension zip directly, without wrapping it in another zip
 
 ## Inputs
 
