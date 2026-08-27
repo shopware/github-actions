@@ -102,6 +102,11 @@ inputs:
     description: "Artifact (extension zip archive) to download; Setting this will prevent a checkout of the extension and download the referenced archive instead"
     required: false
 
+  pre-decompress-extension-zip:
+    description: "Pre decompress the Extension ZIP (e.g. double zipping)"
+    required: false
+    default: "false"
+
   with-submodules:
     description: "Checkout including all submodules"
     required: false
@@ -157,6 +162,7 @@ runs:
       with:
         name: ${{ inputs.extension-zip }}
         path: custom/plugins/${{ inputs.extensionName }}
+        skip-decompress: ${{ inputs.pre-decompress-extension-zip != 'true' }}
 
     - name: Extract extension zip if needed
       if: ${{ inputs.extension-zip }}
