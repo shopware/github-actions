@@ -6,7 +6,7 @@ branding:
   icon: "download"
 inputs:
   version:
-    description: "The extension verifier to use"
+    description: "The Shopware CLI version to install"
     required: false
     default: "latest"
   action:
@@ -27,6 +27,8 @@ runs:
   steps:
     - name: Install Shopware-CLI
       uses: shopware/shopware-cli-action@v3
+      with:
+        version: ${{ inputs.version }}
     - name: Run verifier
       if: inputs.action == 'check'
       shell: bash
