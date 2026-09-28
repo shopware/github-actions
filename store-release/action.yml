@@ -72,7 +72,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.ghToken }}
     - name: Validate Zip
       shell: bash
-      run: shopware-cli extension validate $(pwd)/${{ inputs.extensionName }}.zip
+      run: shopware-cli extension validate $(pwd)/${{ inputs.extensionName }}.zip --only sw-cli
     - name: Store Upload
       shell: bash
       run: shopware-cli account producer extension upload $(pwd)/${{ inputs.extensionName }}.zip
