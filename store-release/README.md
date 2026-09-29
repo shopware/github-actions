@@ -5,7 +5,7 @@ Builds the extension and uploads a zip of it to the Shopware Store.
 ## What it does
 
 1. Builds the extension zip
-2. Validates the zip
+2. Validates the zip (built-in checks, `--only sw-cli`)
 3. Uploads to Shopware Store
 4. Optionally creates a GitHub release
 5. Optionally creates a git tag

@@ -7,7 +7,7 @@ Builds the extension zip and validates it using shopware-cli.
 1. Checks out the repository
 2. Installs shopware-cli
 3. Builds the extension zip using shopware-cli
-4. Validates the zip file
+4. Validates the zip file (built-in checks, `--only sw-cli`)
 5. Uploads the extension zip directly, without wrapping it in another zip
 
 ## Inputs
