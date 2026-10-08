@@ -36,7 +36,7 @@ runs:
         CHECK_AGAINST: ${{ inputs.check-against }}
         EXCLUDE: ${{ inputs.exclude }}
       run: |
-        ARGS=(--full --check-against "${CHECK_AGAINST}")
+        ARGS=(--check-against "${CHECK_AGAINST}")
         if [[ -n "${EXCLUDE}" ]]; then
           ARGS+=("--exclude=${EXCLUDE}")
         fi
