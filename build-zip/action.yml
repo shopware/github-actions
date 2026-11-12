@@ -45,6 +45,7 @@ runs:
       shell: bash
       run: shopware-cli extension zip "${{ inputs.path }}" ${{ (inputs.disableGit == 'false' && format('--git-commit {0}', github.sha)) || '--disable-git' }} --release
     - name: Rename
+      if: inputs.disableGit == 'false'
       shell: bash
       run: mv ${{ inputs.extensionName }}-${{ github.sha }}.zip ${{ inputs.extensionName }}.zip
     - name: Validate
