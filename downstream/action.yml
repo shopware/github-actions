@@ -123,4 +123,5 @@ runs:
         UPSTREAM_TOKEN: ${{ inputs.upstream-token }}
         UPSTREAM_REPOSITORY: ${{ github.repository }}
         UPSTREAM_RUN_ID: ${{ github.run_id }}
+        UPSTREAM_REF: ${{ github.ref }}
       run: timeout "${{ inputs.timeout }}" ${GITHUB_ACTION_PATH}/wait.bash "$REPO" "${{ inputs.poll_interval }}" "${{ steps.trigger.outputs.run_url }}"

@@ -9,6 +9,7 @@ Trigger a downstream workflow in another repository and wait for it to finish.
 3. Triggers the downstream workflow
 4. Waits for the workflow to complete
 5. Fails if downstream workflow fails
+6. In a merge queue, cancels the downstream run once the upstream `gh-readonly-queue/*` branch is deleted (the entry left the queue), so it doesn't fail at checkout. The token needs `actions: write` on the downstream repo.
 
 ## Inputs
 
